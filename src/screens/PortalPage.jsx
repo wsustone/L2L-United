@@ -47,10 +47,7 @@ const STATIC_FILES = {
 const compareStage = (stage, target) => (STAGE_ORDER[stage] ?? -1) >= (STAGE_ORDER[target] ?? 999)
 
 export default function PortalPage() {
-  const { isAuthenticated, status: authStatus, profile, user, signOut, refreshProfile } = useAuth()
-
-  const [profileStatus, setProfileStatus] = useState('idle')
-  const [profileError, setProfileError] = useState('')
+  const { isAuthenticated, status: authStatus, profile, user, refreshProfile } = useAuth()
 
   const [ndaDownloadStatus, setNdaDownloadStatus] = useState('idle')
   const [ndaUploadStatus, setNdaUploadStatus] = useState('idle')
@@ -106,37 +103,6 @@ export default function PortalPage() {
       setHasViewedTerms(true)
     }
   }, [needsTermsRefresh, hasAcceptedCurrentTerms])
-
-  const handleProfileSubmit = async (event) => {
-    event.preventDefault()
-
-    const formData = new FormData(event.currentTarget)
-    const fullName = formData.get('fullName')?.toString().trim() ?? ''
-    const phone = formData.get('phone')?.toString().trim() ?? ''
-    const company = formData.get('company')?.toString().trim() ?? ''
-
-    setProfileStatus('loading')
-    setProfileError('')
-
-    try {
-      const { error } = await supabase.rpc('update_profile_details', {
-        p_full_name: fullName || null,
-        p_phone: phone || null,
-        p_company: company || null,
-      })
-
-      if (error) {
-        throw error
-      }
-
-      await refreshProfile()
-      setProfileStatus('success')
-    } catch (error) {
-      console.error('[PortalPage] failed to update profile', error)
-      setProfileStatus('error')
-      setProfileError(error.message ?? 'Unable to save profile details. Please try again.')
-    }
-  }
 
   const getSignedUrl = async (bucket, path, expiresIn = 60 * 5) => {
     const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn)
@@ -296,51 +262,11 @@ export default function PortalPage() {
     </section>
   )
 
-  const renderProfileSection = () => (
+  const renderProfileReminder = () => (
     <section className="portal-card">
-      <div className="portal-card-header">
-        <h2>Your profile</h2>
-        <button type="button" className="link-button" onClick={refreshProfile}>
-          Refresh
-        </button>
-      </div>
-      <form className="profile-form" onSubmit={handleProfileSubmit}>
-        <label htmlFor="profile-fullName">Full name</label>
-        <input
-          id="profile-fullName"
-          name="fullName"
-          type="text"
-          defaultValue={profile?.full_name ?? ''}
-          placeholder="Jane Doe"
-        />
-
-        <label htmlFor="profile-company">Organization / Program</label>
-        <input
-          id="profile-company"
-          name="company"
-          type="text"
-          defaultValue={profile?.company ?? ''}
-          placeholder="Parent Association"
-        />
-
-        <label htmlFor="profile-phone">Phone (optional)</label>
-        <input
-          id="profile-phone"
-          name="phone"
-          type="tel"
-          defaultValue={profile?.phone ?? ''}
-          placeholder="555-555-5555"
-        />
-
-        {profileError ? <p className="status-message error">{profileError}</p> : null}
-        {profileStatus === 'success' ? (
-          <p className="status-message success">Profile updated.</p>
-        ) : null}
-
-        <button type="submit" className="primary-button" disabled={profileStatus === 'loading'}>
-          {profileStatus === 'loading' ? 'Saving…' : 'Save profile'}
-        </button>
-      </form>
+      <h2>Your profile</h2>
+      <p>Use the menu in the top navigation to review or update your contact information.</p>
+      <p className="meta">Keeping your details current helps our team approve access quickly.</p>
     </section>
   )
 
@@ -349,12 +275,28 @@ export default function PortalPage() {
       <h2>Non-Circumvent NDA</h2>
       <p>{stageInfo.message}</p>
 
+      {!compareStage(accessStage, 'nda_available') ? (
+        <p className="status-message warning">
+          NDA download unlocks once an administrator approves your request.
+        </p>
+      ) : null}
+
+      {compareStage(accessStage, 'nda_available') && !hasAcceptedCurrentTerms ? (
+        <p className="status-message warning">
+          Accept the latest terms before downloading the NDA template.
+        </p>
+      ) : null}
+
       <div className="action-row">
         <button
           type="button"
           className="secondary-button"
           onClick={handleDownloadNda}
-          disabled={!compareStage(accessStage, 'nda_available') || ndaDownloadStatus === 'loading'}
+          disabled={
+            !compareStage(accessStage, 'nda_available') ||
+            !hasAcceptedCurrentTerms ||
+            ndaDownloadStatus === 'loading'
+          }
         >
           {ndaDownloadStatus === 'loading' ? 'Preparing…' : 'Download NDA template'}
         </button>
@@ -381,11 +323,7 @@ export default function PortalPage() {
   )
 
   const renderTermsSection = () => {
-    const acceptButtonLabel = termsStatus === 'loading'
-      ? 'Recording…'
-      : hasViewedTerms
-        ? 'I agree to the terms'
-        : 'View document to enable'
+    const acceptButtonLabel = termsStatus === 'loading' ? 'Recording…' : 'I agree to the terms'
 
     return (
       <section className="portal-card">
@@ -510,14 +448,11 @@ export default function PortalPage() {
         </div>
         <div className="portal-header-actions">
           <span className={stageBadgeClass}>{stageInfo.label}</span>
-          <button type="button" className="link-button" onClick={signOut}>
-            Sign out
-          </button>
         </div>
       </header>
 
       <div className="portal-grid">
-        {renderProfileSection()}
+        {renderProfileReminder()}
         {renderTermsSection()}
         {renderNdaSection()}
         {renderDocumentsSection()}

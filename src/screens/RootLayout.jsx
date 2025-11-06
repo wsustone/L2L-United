@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 
+import ProfileMenu from '../components/ProfileMenu.jsx'
 import { useAuth } from '../providers/AuthProvider.jsx'
 
 export default function RootLayout() {
@@ -23,9 +24,7 @@ export default function RootLayout() {
             Portal
           </Link>
           {isAuthenticated ? (
-            <span className="app-nav-status" title={signedInLabel}>
-              {signedInLabel}
-            </span>
+            <ProfileMenu label={signedInLabel} />
           ) : (
             <Link to="/sign-in" className="app-nav-link">
               Sign in
