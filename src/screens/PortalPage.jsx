@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../providers/AuthProvider.jsx'
@@ -47,7 +47,7 @@ const STATIC_FILES = {
 const compareStage = (stage, target) => (STAGE_ORDER[stage] ?? -1) >= (STAGE_ORDER[target] ?? 999)
 
 export default function PortalPage() {
-  const { isAuthenticated, status: authStatus, profile, user, refreshProfile } = useAuth()
+  const { isAuthenticated, status: authStatus, profile, refreshProfile } = useAuth()
 
   const [ndaDownloadStatus, setNdaDownloadStatus] = useState('idle')
   const [ndaUploadStatus, setNdaUploadStatus] = useState('idle')
@@ -262,14 +262,6 @@ export default function PortalPage() {
     </section>
   )
 
-  const renderProfileReminder = () => (
-    <section className="portal-card">
-      <h2>Your profile</h2>
-      <p>Use the menu in the top navigation to review or update your contact information.</p>
-      <p className="meta">Keeping your details current helps our team approve access quickly.</p>
-    </section>
-  )
-
   const renderNdaSection = () => (
     <section className="portal-card">
       <h2>Non-Circumvent NDA</h2>
@@ -428,15 +420,7 @@ export default function PortalPage() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <section className="page portal-page">
-        <header className="portal-header">
-          <h1>Portal</h1>
-          <p>Secure resources are available after signing in.</p>
-        </header>
-        {renderAuthPrompt()}
-      </section>
-    )
+    return <Navigate to="/sign-in" replace state={{ from: '/portal' }} />
   }
 
   return (
@@ -452,7 +436,6 @@ export default function PortalPage() {
       </header>
 
       <div className="portal-grid">
-        {renderProfileReminder()}
         {renderTermsSection()}
         {renderNdaSection()}
         {renderDocumentsSection()}

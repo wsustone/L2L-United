@@ -1,34 +1,35 @@
 import { Suspense } from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 
-import ProfileMenu from '../components/ProfileMenu.jsx'
+import AccountMenu from '../components/AccountMenu.jsx'
 import { useAuth } from '../providers/AuthProvider.jsx'
 
 export default function RootLayout() {
   const { isAuthenticated, user, profile } = useAuth()
-  const signedInLabel = profile?.full_name?.trim() || user?.email || 'Signed in'
+  const signedInLabel = `${profile?.full_name?.trim() || user?.email || 'Account'}`
 
   return (
     <div className="app-shell">
       <header className="app-header">
         <div className="app-branding">
-          <Link to="/" className="app-logo">
-            L2L United
+          <Link to="/" className="app-logo" aria-label="L2L United home">
+            <img src="/images/blueL2L.png" alt="L2L United logo" />
+            <span className="app-logo-text">United</span>
           </Link>
         </div>
         <nav className="app-nav">
-          <Link to="/" className="app-nav-link">
+          <NavLink to="/" end className={({ isActive }) => `app-nav-link${isActive ? ' app-nav-link-active' : ''}`}>
             Home
-          </Link>
-          <Link to="/portal" className="app-nav-link">
+          </NavLink>
+          <NavLink to="/portal" className={({ isActive }) => `app-nav-link${isActive ? ' app-nav-link-active' : ''}`}>
             Portal
-          </Link>
+          </NavLink>
           {isAuthenticated ? (
-            <ProfileMenu label={signedInLabel} />
+            <AccountMenu label={signedInLabel} />
           ) : (
-            <Link to="/sign-in" className="app-nav-link">
+            <NavLink to="/sign-in" className={({ isActive }) => `app-nav-link${isActive ? ' app-nav-link-active' : ''}`}>
               Sign in
-            </Link>
+            </NavLink>
           )}
         </nav>
       </header>

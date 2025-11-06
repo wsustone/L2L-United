@@ -5,6 +5,7 @@ import RootLayout from '../screens/RootLayout.jsx'
 
 const PortalInfoPage = lazy(() => import('../screens/PortalInfoPage.jsx'))
 const PortalPage = lazy(() => import('../screens/PortalPage.jsx'))
+const ProfilePage = lazy(() => import('../screens/ProfilePage.jsx'))
 const SignInPage = lazy(() => import('../screens/SignInPage.jsx'))
 const RegisterPage = lazy(() => import('../screens/RegisterPage.jsx'))
 
@@ -15,6 +16,7 @@ const routes = [
     children: [
       { index: true, element: <PortalInfoPage /> },
       { path: 'portal', element: <PortalPage /> },
+      { path: 'profile', element: <ProfilePage /> },
       { path: 'sign-in', element: <SignInPage /> },
       { path: 'register', element: <RegisterPage /> },
       { path: '*', element: <Navigate to="/" replace /> },

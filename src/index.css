@@ -37,24 +37,67 @@ a {
 }
 
 .app-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
   font-weight: 700;
   font-size: 1.25rem;
+  text-transform: uppercase;
+}
+
+.app-logo img {
+  display: block;
+  height: clamp(32px, 8vh, 52px);
+  width: auto;
+}
+
+.app-logo-text {
+  letter-spacing: 0.18em;
+  font-size: 1.05rem;
+  background: linear-gradient(90deg, #38bdf8, #2563eb);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 .app-nav {
   display: flex;
+  align-items: center;
   gap: 1rem;
 }
 
 .app-nav-link {
   padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
+  position: relative;
   transition: background-color 150ms ease-in-out;
 }
 
 .app-nav-link:hover,
 .app-nav-link:focus-visible {
   background-color: rgba(255, 255, 255, 0.15);
+}
+
+.app-nav-link-active {
+  color: #fff;
+}
+
+.app-nav-link-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.35rem;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8, #2563eb);
+}
+
+.app-nav-button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .app-nav-status {
@@ -64,6 +107,72 @@ a {
   color: #e2e8f0;
   font-weight: 600;
   font-size: 0.95rem;
+}
+
+.account-menu {
+  position: relative;
+}
+
+.account-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #0f172a;
+  color: #60a5fa;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.65);
+  padding: 0.38rem 0.95rem 0.26rem;
+  line-height: 1.1;
+  font-size: 0.95rem;
+  transition: box-shadow 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.account-menu-label {
+  font-weight: 600;
+}
+
+.account-menu-button svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+  transform: translateY(0.5px);
+}
+
+.account-menu-button:hover,
+.account-menu-button:focus-visible {
+  border-color: #38bdf8;
+  color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+}
+
+.account-menu-dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.45);
+  display: grid;
+  min-width: 200px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.account-menu-item {
+  padding: 0.75rem 1rem;
+  display: block;
+  text-align: left;
+  background: transparent;
+  border: none;
+  width: 100%;
+  color: inherit;
+  cursor: pointer;
+}
+
+.account-menu-item:hover,
+.account-menu-item:focus-visible {
+  background: rgba(59, 130, 246, 0.18);
 }
 
 .app-main {
@@ -293,6 +402,11 @@ a {
   color: #b91c1c;
 }
 
+.badge.neutral {
+  background: #e2e8f0;
+  color: #334155;
+}
+
 .portal-grid {
   display: grid;
   gap: 1.5rem;
@@ -306,6 +420,27 @@ a {
   display: grid;
   gap: 1rem;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+}
+
+.profile-page {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.profile-card {
+  gap: 1.25rem;
+}
+
+.profile-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .cta-row {
