@@ -41,7 +41,7 @@ export default function SignInPage() {
     <section className="auth-page">
       <div className="auth-card">
         <h1>Sign in</h1>
-        <p>Access secure parent resources with your portal credentials.</p>
+        <p>Access secure resources with your portal credentials.</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label htmlFor="auth-email">Email address</label>

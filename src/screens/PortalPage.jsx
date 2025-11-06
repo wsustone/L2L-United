@@ -14,28 +14,35 @@ const STAGE_ORDER = {
 
 const STAGE_DETAILS = {
   awaiting_admin: {
-    label: 'Awaiting Admin Approval',
-    message: 'An administrator will unlock NDA access once your account is verified.',
+    label: 'Awaiting Review',
+    message: 'We will unlock NDA access after a quick admin check.',
   },
   nda_available: {
     label: 'NDA Available',
-    message: 'Download, sign, and upload the Non-Circumvent NDA to continue.',
+    message: 'Download, sign, and upload the NDA to keep things moving.',
   },
   under_review: {
     label: 'NDA Under Review',
-    message: 'Your signed NDA has been submitted. We will notify you once it is approved.',
+    message: 'Thanks! We are reviewing your upload and will update you soon.',
   },
   approved: {
     label: 'Approved',
-    message: 'You now have access to parent resources and download history.',
+    message: 'Files and version history are now unlocked for your account.',
   },
   rejected: {
-    label: 'Action Required',
-    message: 'Please contact support for additional information regarding your submission.',
+    label: 'Action Needed',
+    message: 'Reach out to support so we can help resolve the submission.',
   },
 }
 
 const NDA_BUCKET = 'nda-workflow'
+const SECURE_DOC_BUCKET = 'secure-docs'
+const CURRENT_TERMS_VERSION = '2025-11-05'
+
+const STATIC_FILES = {
+  ndaTemplate: 'static_files/Non-Circumvent NDA.pdf',
+  termsOverview: 'static_files/L2LUnited_Condition.pdf',
+}
 
 const compareStage = (stage, target) => (STAGE_ORDER[stage] ?? -1) >= (STAGE_ORDER[target] ?? 999)
 
@@ -51,6 +58,7 @@ export default function PortalPage() {
 
   const [termsStatus, setTermsStatus] = useState('idle')
   const [termsMessage, setTermsMessage] = useState('')
+  const [hasViewedTerms, setHasViewedTerms] = useState(false)
 
   const [documents, setDocuments] = useState([])
   const [documentsStatus, setDocumentsStatus] = useState('idle')
@@ -58,6 +66,8 @@ export default function PortalPage() {
 
   const accessStage = profile?.access_stage ?? 'awaiting_admin'
   const stageInfo = STAGE_DETAILS[accessStage] ?? STAGE_DETAILS.awaiting_admin
+  const needsTermsRefresh = (profile?.terms_version ?? null) !== CURRENT_TERMS_VERSION
+  const hasAcceptedCurrentTerms = Boolean(profile?.terms_agreed_at) && !needsTermsRefresh
 
   useEffect(() => {
     if (!profile || !compareStage(accessStage, 'approved')) {
@@ -88,6 +98,14 @@ export default function PortalPage() {
 
     loadDocuments()
   }, [profile, accessStage])
+
+  useEffect(() => {
+    if (needsTermsRefresh) {
+      setHasViewedTerms(false)
+    } else if (hasAcceptedCurrentTerms) {
+      setHasViewedTerms(true)
+    }
+  }, [needsTermsRefresh, hasAcceptedCurrentTerms])
 
   const handleProfileSubmit = async (event) => {
     event.preventDefault()
@@ -120,22 +138,40 @@ export default function PortalPage() {
     }
   }
 
+  const getSignedUrl = async (bucket, path, expiresIn = 60 * 5) => {
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn)
+
+    if (error) {
+      throw error
+    }
+
+    if (!data?.signedUrl) {
+      throw new Error('File not available yet. Please check back soon.')
+    }
+
+    return data.signedUrl
+  }
+
   const handleDownloadNda = async () => {
     setNdaDownloadStatus('loading')
     setNdaMessage('')
 
     try {
+      let ndaUrl = null
+
       const { data, error } = await supabase.rpc('get_nda_template_url')
 
       if (error) {
-        throw error
+        console.warn('[PortalPage] falling back to storage for NDA template', error)
+      } else {
+        ndaUrl = data ?? null
       }
 
-      if (data) {
-        window.open(data, '_blank', 'noopener,noreferrer')
-      } else {
-        setNdaMessage('Template not available yet. Please check back soon.')
+      if (!ndaUrl) {
+        ndaUrl = await getSignedUrl(SECURE_DOC_BUCKET, STATIC_FILES.ndaTemplate)
       }
+
+      window.open(ndaUrl, '_blank', 'noopener,noreferrer')
 
       setNdaDownloadStatus('success')
     } catch (error) {
@@ -204,17 +240,30 @@ export default function PortalPage() {
     setTermsMessage('')
 
     try {
-      const { error } = await supabase.rpc('accept_terms')
+      const { error } = await supabase.rpc('accept_terms', { p_terms_version: CURRENT_TERMS_VERSION })
       if (error) {
         throw error
       }
       await refreshProfile()
       setTermsStatus('success')
       setTermsMessage('Terms accepted successfully.')
+      setHasViewedTerms(true)
     } catch (error) {
       console.error('[PortalPage] failed to accept terms', error)
       setTermsStatus('error')
       setTermsMessage(error.message ?? 'Unable to record acceptance right now.')
+    }
+  }
+
+  const handleViewTermsDocument = async () => {
+    try {
+      const signedUrl = await getSignedUrl(SECURE_DOC_BUCKET, STATIC_FILES.termsOverview)
+      window.open(signedUrl, '_blank', 'noopener,noreferrer')
+      setHasViewedTerms(true)
+    } catch (error) {
+      console.error('[PortalPage] failed to open terms document', error)
+      setTermsStatus('error')
+      setTermsMessage(error.message ?? 'Unable to open the terms document right now.')
     }
   }
 
@@ -241,8 +290,8 @@ export default function PortalPage() {
     <section className="portal-card">
       <h2>Access requires an account</h2>
       <p>
-        Please <Link to="/sign-in">sign in</Link> or <Link to="/register">register</Link> to continue to the
-        secure parent portal.
+        Please <Link to="/sign-in">sign in</Link> or <Link to="/register">register</Link> to continue to the secure
+        portal.
       </p>
     </section>
   )
@@ -331,32 +380,56 @@ export default function PortalPage() {
     </section>
   )
 
-  const renderTermsSection = () => (
-    <section className="portal-card">
-      <h2>Terms &amp; Conditions</h2>
-      <p>
-        Review the program terms and confirm acceptance. You must agree to the terms before accessing
-        confidential documents.
-      </p>
+  const renderTermsSection = () => {
+    const acceptButtonLabel = termsStatus === 'loading'
+      ? 'Recording…'
+      : hasViewedTerms
+        ? 'I agree to the terms'
+        : 'View document to enable'
 
-      {profile?.terms_agreed_at ? (
-        <p className="meta">Accepted on {new Date(profile.terms_agreed_at).toLocaleString()}</p>
-      ) : (
-        <button
-          type="button"
-          className="primary-button"
-          onClick={handleAcceptTerms}
-          disabled={termsStatus === 'loading'}
-        >
-          {termsStatus === 'loading' ? 'Recording…' : 'I agree to the terms'}
-        </button>
-      )}
+    return (
+      <section className="portal-card">
+        <h2>Terms &amp; Conditions</h2>
+        <p>
+          Review the program terms and confirm acceptance. You must agree to the terms before accessing
+          confidential documents.
+        </p>
 
-      {termsMessage ? (
-        <p className={`status-message ${termsStatus === 'error' ? 'error' : 'success'}`}>{termsMessage}</p>
-      ) : null}
-    </section>
-  )
+        {needsTermsRefresh && profile?.terms_agreed_at ? (
+          <p className="status-message warning">
+            New terms are available. Please review the document and accept to continue.
+          </p>
+        ) : null}
+
+        <div className="action-row">
+          <button type="button" className="secondary-button" onClick={handleViewTermsDocument}>
+            View terms document
+          </button>
+
+          {hasAcceptedCurrentTerms ? (
+            <p className="meta">Accepted on {new Date(profile.terms_agreed_at).toLocaleString()}</p>
+          ) : (
+            <button
+              type="button"
+              className="primary-button"
+              onClick={handleAcceptTerms}
+              disabled={!hasViewedTerms || termsStatus === 'loading'}
+            >
+              {acceptButtonLabel}
+            </button>
+          )}
+        </div>
+
+        {!hasAcceptedCurrentTerms && !hasViewedTerms ? (
+          <p className="status-message warning">Open the document before accepting the latest terms.</p>
+        ) : null}
+
+        {termsMessage ? (
+          <p className={`status-message ${termsStatus === 'error' ? 'error' : 'success'}`}>{termsMessage}</p>
+        ) : null}
+      </section>
+    )
+  }
 
   const renderDocumentsSection = () => {
     if (!compareStage(accessStage, 'approved')) {
@@ -367,6 +440,12 @@ export default function PortalPage() {
       <section className="portal-card">
         <h2>Available documents</h2>
         <p>Download the latest resources. Each download is recorded for tracking purposes.</p>
+
+        {!hasAcceptedCurrentTerms ? (
+          <p className="status-message warning">
+            Please review and accept the current terms before downloading confidential documents.
+          </p>
+        ) : null}
 
         {documentsStatus === 'loading' ? <p className="meta">Loading documents…</p> : null}
         {documentsError ? <p className="status-message error">{documentsError}</p> : null}
@@ -383,6 +462,7 @@ export default function PortalPage() {
                 type="button"
                 className="primary-button"
                 onClick={() => handleDownloadDocument(document)}
+                disabled={!hasAcceptedCurrentTerms}
               >
                 Download
               </button>
@@ -413,7 +493,7 @@ export default function PortalPage() {
     return (
       <section className="page portal-page">
         <header className="portal-header">
-          <h1>Parent Portal</h1>
+          <h1>Portal</h1>
           <p>Secure resources are available after signing in.</p>
         </header>
         {renderAuthPrompt()}
@@ -425,8 +505,8 @@ export default function PortalPage() {
     <section className="page portal-page">
       <header className="portal-header">
         <div>
-          <h1>Parent Portal</h1>
-          <p>Manage your access, documents, and agreements.</p>
+          <h1>Portal</h1>
+          <p>Manage access, agreements, and downloads in one place.</p>
         </div>
         <div className="portal-header-actions">
           <span className={stageBadgeClass}>{stageInfo.label}</span>

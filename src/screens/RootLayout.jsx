@@ -1,7 +1,12 @@
 import { Suspense } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 
+import { useAuth } from '../providers/AuthProvider.jsx'
+
 export default function RootLayout() {
+  const { isAuthenticated, user, profile } = useAuth()
+  const signedInLabel = profile?.full_name?.trim() || user?.email || 'Signed in'
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -15,8 +20,17 @@ export default function RootLayout() {
             Home
           </Link>
           <Link to="/portal" className="app-nav-link">
-            Parent Portal
+            Portal
           </Link>
+          {isAuthenticated ? (
+            <span className="app-nav-status" title={signedInLabel}>
+              {signedInLabel}
+            </span>
+          ) : (
+            <Link to="/sign-in" className="app-nav-link">
+              Sign in
+            </Link>
+          )}
         </nav>
       </header>
 

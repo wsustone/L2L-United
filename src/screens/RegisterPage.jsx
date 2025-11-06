@@ -61,7 +61,7 @@ export default function RegisterPage() {
     <section className="auth-page">
       <div className="auth-card">
         <h1>Create an account</h1>
-        <p>Complete the form below to request access to the parent portal.</p>
+        <p>Complete the form to request access to the portal.</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label htmlFor="register-email">Email address</label>
