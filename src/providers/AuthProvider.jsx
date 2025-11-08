@@ -167,6 +167,29 @@ export function AuthProvider({ children }) {
     })
   }
 
+  const requestEmailChange = async (newEmail) => {
+    if (!state.session?.user?.email) {
+      throw new Error('You must be signed in to request an email change.')
+    }
+
+    const trimmed = newEmail?.trim()
+    if (!trimmed) {
+      throw new Error('Enter the new email address you would like to use.')
+    }
+
+    const currentEmail = state.session.user.email
+
+    if (trimmed.toLowerCase() === currentEmail.toLowerCase()) {
+      throw new Error('Use a different email than your current one.')
+    }
+
+    await callAuthEmailFunction({
+      action: 'email_change',
+      email: currentEmail,
+      newEmail: trimmed,
+    })
+  }
+
   const refreshProfile = async () => {
     if (!state.session) return null
     const { data, error } = await supabase.rpc('get_current_profile')
@@ -191,6 +214,7 @@ export function AuthProvider({ children }) {
       sendInviteEmail,
       signOut,
       sendPasswordReset,
+      requestEmailChange,
       refreshProfile,
     }),
     [state.session, state.profile, state.status, state.error],

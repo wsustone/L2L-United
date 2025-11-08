@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../providers/AuthProvider.jsx'
 
 export default function ProfilePage() {
-  const { isAuthenticated, status: authStatus, profile, refreshProfile, user } = useAuth()
+  const { isAuthenticated, status: authStatus, profile, refreshProfile, requestEmailChange, user } = useAuth()
 
   const [formState, setFormState] = useState({
     fullName: '',
@@ -14,6 +14,9 @@ export default function ProfilePage() {
   })
   const [status, setStatus] = useState('idle')
   const [message, setMessage] = useState('')
+  const [emailFormState, setEmailFormState] = useState({ newEmail: '' })
+  const [emailStatus, setEmailStatus] = useState('idle')
+  const [emailMessage, setEmailMessage] = useState('')
 
   useEffect(() => {
     setFormState({
@@ -25,6 +28,39 @@ export default function ProfilePage() {
 
   if (authStatus === 'loading') {
     return <div className="page profile-page">Loading profile…</div>
+  }
+
+  const handleEmailFormChange = (event) => {
+    const { name, value } = event.target
+    setEmailFormState((prev) => ({ ...prev, [name]: value }))
+    if (emailStatus !== 'idle') {
+      setEmailStatus('idle')
+      setEmailMessage('')
+    }
+  }
+
+  const handleEmailSubmit = async (event) => {
+    event.preventDefault()
+    if (!emailFormState.newEmail) {
+      setEmailStatus('error')
+      setEmailMessage('Enter the new email address you would like to use.')
+      return
+    }
+
+    try {
+      setEmailStatus('loading')
+      setEmailMessage('')
+      await requestEmailChange(emailFormState.newEmail)
+      setEmailStatus('success')
+      setEmailMessage(
+        'Confirmation links are on the way. Open the emails sent to your current and new inbox to finish the update.',
+      )
+      setEmailFormState({ newEmail: '' })
+    } catch (error) {
+      console.error('[ProfilePage] failed to request email change', error)
+      setEmailStatus('error')
+      setEmailMessage(error.message ?? 'Unable to request an email change right now.')
+    }
   }
 
   if (!isAuthenticated) {
@@ -124,6 +160,38 @@ export default function ProfilePage() {
             <Link to="/portal" className="secondary-button">
               Back to portal
             </Link>
+          </div>
+        </form>
+      </section>
+
+      <section className="portal-card profile-card">
+        <h2>Change account email</h2>
+        <p>
+          Update the email address associated with your L2L United account. We’ll send confirmation links to your
+          current inbox and the new address for security.
+        </p>
+
+        <form className="profile-form" onSubmit={handleEmailSubmit}>
+          <label htmlFor="profile-newEmail">New email address</label>
+          <input
+            id="profile-newEmail"
+            name="newEmail"
+            type="email"
+            autoComplete="email"
+            value={emailFormState.newEmail}
+            onChange={handleEmailFormChange}
+            placeholder="new-email@example.com"
+            required
+          />
+
+          {emailMessage ? (
+            <p className={`status-message ${emailStatus === 'error' ? 'error' : 'success'}`}>{emailMessage}</p>
+          ) : null}
+
+          <div className="profile-actions">
+            <button type="submit" className="primary-button" disabled={emailStatus === 'loading'}>
+              {emailStatus === 'loading' ? 'Sending confirmation…' : 'Request email change'}
+            </button>
           </div>
         </form>
       </section>

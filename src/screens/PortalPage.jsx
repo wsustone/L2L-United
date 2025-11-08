@@ -37,14 +37,40 @@ const STAGE_DETAILS = {
 
 const NDA_BUCKET = 'nda-workflow'
 const SECURE_DOC_BUCKET = 'secure-docs'
-const CURRENT_TERMS_VERSION = '2025-11-05'
-
 const STATIC_FILES = {
   ndaTemplate: 'static_files/Non-Circumvent NDA.pdf',
-  termsOverview: 'static_files/L2LUnited_Condition.pdf',
 }
 
 const compareStage = (stage, target) => (STAGE_ORDER[stage] ?? -1) >= (STAGE_ORDER[target] ?? 999)
+
+const TERMS_DOCUMENT_TITLE = 'L2LUnited_Condition.pdf'
+
+const normalizeStoragePath = (bucket, path) => {
+  if (!path) return path
+  return path.startsWith(`${bucket}/`) ? path.slice(bucket.length + 1) : path
+}
+
+const resolveDocumentPath = (document, fallbackTitle) => {
+  if (!document?.storage_path) return null
+
+  const trimmedPath = document.storage_path.endsWith('/')
+    ? document.storage_path.slice(0, -1)
+    : document.storage_path
+
+  const lastSegment = trimmedPath.split('/').pop() ?? ''
+  const hasFileExtension = lastSegment.includes('.')
+
+  if (hasFileExtension) {
+    return trimmedPath
+  }
+
+  const title = document.title || fallbackTitle
+  if (!title) {
+    return trimmedPath
+  }
+
+  return `${trimmedPath}/${title}`
+}
 
 export default function PortalPage() {
   const { isAuthenticated, status: authStatus, profile, refreshProfile, sendInviteEmail } = useAuth()
@@ -56,6 +82,8 @@ export default function PortalPage() {
   const [termsStatus, setTermsStatus] = useState('idle')
   const [termsMessage, setTermsMessage] = useState('')
   const [hasViewedTerms, setHasViewedTerms] = useState(false)
+  const [termsDocument, setTermsDocument] = useState(null)
+  const [termsDocumentStatus, setTermsDocumentStatus] = useState('loading')
 
   const [documents, setDocuments] = useState([])
   const [documentsStatus, setDocumentsStatus] = useState('idle')
@@ -67,8 +95,68 @@ export default function PortalPage() {
 
   const accessStage = profile?.access_stage ?? 'awaiting_admin'
   const stageInfo = STAGE_DETAILS[accessStage] ?? STAGE_DETAILS.awaiting_admin
-  const needsTermsRefresh = (profile?.terms_version ?? null) !== CURRENT_TERMS_VERSION
-  const hasAcceptedCurrentTerms = Boolean(profile?.terms_agreed_at) && !needsTermsRefresh
+  const hasTermsMetadata = Boolean(termsDocument?.file_version)
+  const currentTermsVersion = termsDocument?.file_version ?? null
+  const needsTermsRefresh = hasTermsMetadata
+    ? (profile?.terms_version ?? null) !== currentTermsVersion
+    : false
+  const hasAcceptedCurrentTerms = hasTermsMetadata
+    ? Boolean(profile?.terms_agreed_at) && !needsTermsRefresh
+    : true
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadTermsMetadata = async () => {
+      setTermsDocumentStatus('loading')
+
+      try {
+        const { data, error } = await supabase
+          .from('documents')
+          .select('id,title,storage_path,file_version,updated_at')
+          .eq('title', TERMS_DOCUMENT_TITLE)
+          .eq('active', true)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+
+        if (!isMounted) return
+
+        if (error) {
+          console.error('[PortalPage] failed to load terms document metadata', error)
+          setTermsDocumentStatus('error')
+          setTermsStatus((prev) => (prev === 'error' ? prev : 'error'))
+          setTermsMessage('Unable to load the latest Terms & Conditions. Please contact support if this persists.')
+          return
+        }
+
+        const [latest] = data ?? []
+
+        if (!latest) {
+          console.warn('[PortalPage] no active terms document found in documents table')
+          setTermsDocument(null)
+          setTermsDocumentStatus('error')
+          setTermsStatus((prev) => (prev === 'error' ? prev : 'error'))
+          setTermsMessage('Latest Terms & Conditions document is missing. Please contact support.')
+          return
+        }
+
+        setTermsDocument(latest)
+        setTermsDocumentStatus('ready')
+      } catch (error) {
+        if (!isMounted) return
+        console.error('[PortalPage] unexpected error loading terms metadata', error)
+        setTermsDocumentStatus('error')
+        setTermsStatus((prev) => (prev === 'error' ? prev : 'error'))
+        setTermsMessage('Unexpected error loading Terms & Conditions. Please refresh or contact support.')
+      }
+    }
+
+    loadTermsMetadata()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   useEffect(() => {
     if (!profile || !compareStage(accessStage, 'approved')) {
@@ -101,25 +189,39 @@ export default function PortalPage() {
   }, [profile, accessStage])
 
   useEffect(() => {
+    if (!hasTermsMetadata) {
+      setHasViewedTerms(true)
+      return
+    }
+
     if (needsTermsRefresh) {
       setHasViewedTerms(false)
     } else if (hasAcceptedCurrentTerms) {
       setHasViewedTerms(true)
     }
-  }, [needsTermsRefresh, hasAcceptedCurrentTerms])
+  }, [hasTermsMetadata, needsTermsRefresh, hasAcceptedCurrentTerms])
 
   const getSignedUrl = async (bucket, path, expiresIn = 60 * 5) => {
-    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn)
-
-    if (error) {
-      throw error
+    if (!path) {
+      throw new Error('Missing storage path for requested document.')
     }
 
-    if (!data?.signedUrl) {
-      throw new Error('File not available yet. Please check back soon.')
+    const normalizedPath = normalizeStoragePath(bucket, path)
+    const candidatePaths = normalizedPath && normalizedPath !== path ? [normalizedPath, path] : [path]
+
+    let lastError = null
+
+    for (const candidate of candidatePaths) {
+      const { data, error } = await supabase.storage.from(bucket).createSignedUrl(candidate, expiresIn)
+
+      if (!error && data?.signedUrl) {
+        return data.signedUrl
+      }
+
+      lastError = error ?? new Error('{bucket}/{path} File not available yet. Please check back soon.')
     }
 
-    return data.signedUrl
+    throw lastError
   }
 
   const handleDownloadNda = async () => {
@@ -206,11 +308,17 @@ export default function PortalPage() {
   }
 
   const handleAcceptTerms = async () => {
+    if (!hasTermsMetadata || !currentTermsVersion) {
+      setTermsStatus('error')
+      setTermsMessage('Latest Terms & Conditions are unavailable. Please contact support.')
+      return
+    }
+
     setTermsStatus('loading')
     setTermsMessage('')
 
     try {
-      const { error } = await supabase.rpc('accept_terms', { p_terms_version: CURRENT_TERMS_VERSION })
+      const { error } = await supabase.rpc('accept_terms', { p_terms_version: currentTermsVersion })
       if (error) {
         throw error
       }
@@ -226,8 +334,16 @@ export default function PortalPage() {
   }
 
   const handleViewTermsDocument = async () => {
+    const resolvedPath = resolveDocumentPath(termsDocument, TERMS_DOCUMENT_TITLE)
+
+    if (!hasTermsMetadata || !currentTermsVersion || !resolvedPath) {
+      setTermsStatus('error')
+      setTermsMessage('Terms document is not available right now. Please contact support.')
+      return
+    }
+
     try {
-      const signedUrl = await getSignedUrl(SECURE_DOC_BUCKET, STATIC_FILES.termsOverview)
+      const signedUrl = await getSignedUrl(SECURE_DOC_BUCKET, resolvedPath)
       window.open(signedUrl, '_blank', 'noopener,noreferrer')
       setHasViewedTerms(true)
     } catch (error) {
@@ -343,6 +459,8 @@ export default function PortalPage() {
 
   const renderTermsSection = () => {
     const acceptButtonLabel = termsStatus === 'loading' ? 'Recording…' : 'I agree to the terms'
+    const isTermsReady = hasTermsMetadata && termsDocumentStatus === 'ready'
+    const acceptedAt = profile?.terms_agreed_at ? new Date(profile.terms_agreed_at) : null
 
     return (
       <section className="portal-card">
@@ -358,19 +476,30 @@ export default function PortalPage() {
           </p>
         ) : null}
 
+        {termsDocumentStatus === 'loading' ? (
+          <p className="meta">Loading latest Terms &amp; Conditions…</p>
+        ) : null}
+
+        {termsDocumentStatus === 'error' ? (
+          <p className="status-message error">Unable to load the Terms &amp; Conditions document.</p>
+        ) : null}
+
         <div className="action-row">
           <button type="button" className="secondary-button" onClick={handleViewTermsDocument}>
             View terms document
           </button>
 
-          {hasAcceptedCurrentTerms ? (
-            <p className="meta">Accepted on {new Date(profile.terms_agreed_at).toLocaleString()}</p>
+          {hasAcceptedCurrentTerms && acceptedAt ? (
+            <p className="meta">
+              Accepted on {acceptedAt.toLocaleString()}
+              {currentTermsVersion ? ` · Version ${currentTermsVersion}` : ''}
+            </p>
           ) : (
             <button
               type="button"
               className="primary-button"
               onClick={handleAcceptTerms}
-              disabled={!hasViewedTerms || termsStatus === 'loading'}
+              disabled={!hasViewedTerms || termsStatus === 'loading' || !isTermsReady}
             >
               {acceptButtonLabel}
             </button>
