@@ -386,6 +386,12 @@ a {
   gap: 1rem;
 }
 
+.auth-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.9rem;
+}
+
 .auth-form label {
   font-weight: 600;
 }

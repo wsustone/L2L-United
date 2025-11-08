@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../providers/AuthProvider.jsx'
@@ -6,6 +6,8 @@ import { useAuth } from '../providers/AuthProvider.jsx'
 export default function RegisterPage() {
   const navigate = useNavigate()
   const { signUpWithPassword } = useAuth()
+
+  const defaultRedirect = useMemo(() => import.meta.env.VITE_SUPABASE_REDIRECT_SIGNUP ?? null, [])
 
   const [formState, setFormState] = useState({ email: '', password: '', confirmPassword: '' })
   const [status, setStatus] = useState('idle')
@@ -38,17 +40,17 @@ export default function RegisterPage() {
       await signUpWithPassword({
         email: formState.email,
         password: formState.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/portal`,
-        },
+        options: defaultRedirect ? { emailRedirectTo: defaultRedirect } : undefined,
       })
 
       setSuccessMessage(
-        'Registration successful! Please check your email for confirmation and sign in once verified.',
+        `Great! We just emailed ${formState.email}. Open the message to confirm your address and follow the link to finish setting up your portal access.`,
       )
+      setFormState({ email: '', password: '', confirmPassword: '' })
+
       setTimeout(() => {
-        navigate('/sign-in')
-      }, 3000)
+        navigate('/sign-in', { replace: true, state: { fromRegistration: true } })
+      }, 4000)
     } catch (error) {
       console.error('[RegisterPage] registration failed', error)
       setErrorMessage(error.message ?? 'Unable to register. Please try again.')

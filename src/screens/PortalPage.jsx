@@ -47,7 +47,7 @@ const STATIC_FILES = {
 const compareStage = (stage, target) => (STAGE_ORDER[stage] ?? -1) >= (STAGE_ORDER[target] ?? 999)
 
 export default function PortalPage() {
-  const { isAuthenticated, status: authStatus, profile, refreshProfile } = useAuth()
+  const { isAuthenticated, status: authStatus, profile, refreshProfile, sendInviteEmail } = useAuth()
 
   const [ndaDownloadStatus, setNdaDownloadStatus] = useState('idle')
   const [ndaUploadStatus, setNdaUploadStatus] = useState('idle')
@@ -60,6 +60,10 @@ export default function PortalPage() {
   const [documents, setDocuments] = useState([])
   const [documentsStatus, setDocumentsStatus] = useState('idle')
   const [documentsError, setDocumentsError] = useState('')
+
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteStatus, setInviteStatus] = useState('idle')
+  const [inviteMessage, setInviteMessage] = useState('')
 
   const accessStage = profile?.access_stage ?? 'awaiting_admin'
   const stageInfo = STAGE_DETAILS[accessStage] ?? STAGE_DETAILS.awaiting_admin
@@ -252,6 +256,29 @@ export default function PortalPage() {
     }
   }
 
+  const handleInviteSubmit = async (event) => {
+    event.preventDefault()
+
+    if (!inviteEmail) {
+      setInviteMessage('Enter an email to send the invitation to.')
+      setInviteStatus('error')
+      return
+    }
+
+    try {
+      setInviteStatus('loading')
+      setInviteMessage('')
+      await sendInviteEmail({ email: inviteEmail })
+      setInviteStatus('success')
+      setInviteMessage('Invitation sent! The recipient will get setup instructions shortly.')
+      setInviteEmail('')
+    } catch (error) {
+      console.error('[PortalPage] failed to send invite', error)
+      setInviteStatus('error')
+      setInviteMessage(error.message ?? 'Unable to send invite right now. Please try again.')
+    }
+  }
+
   const renderAuthPrompt = () => (
     <section className="portal-card">
       <h2>Access requires an account</h2>
@@ -361,6 +388,47 @@ export default function PortalPage() {
     )
   }
 
+  const renderAdminTools = () => {
+    if (!profile?.is_admin) {
+      return null
+    }
+
+    return (
+      <section className="portal-card">
+        <h2>Admin tools</h2>
+        <p>Invite collaborators to the portal. Each invite email contains a secure registration link.</p>
+
+        <form className="auth-form" onSubmit={handleInviteSubmit}>
+          <label htmlFor="invite-email">Invite email</label>
+          <input
+            id="invite-email"
+            name="invite-email"
+            type="email"
+            autoComplete="email"
+            value={inviteEmail}
+            onChange={(event) => {
+              setInviteEmail(event.target.value)
+              if (inviteStatus !== 'idle') {
+                setInviteStatus('idle')
+                setInviteMessage('')
+              }
+            }}
+            placeholder="guest@example.com"
+            required
+          />
+
+          {inviteMessage ? (
+            <p className={`status-message ${inviteStatus === 'error' ? 'error' : 'success'}`}>{inviteMessage}</p>
+          ) : null}
+
+          <button type="submit" className="primary-button" disabled={inviteStatus === 'loading'}>
+            {inviteStatus === 'loading' ? 'Sending invite…' : 'Send invite'}
+          </button>
+        </form>
+      </section>
+    )
+  }
+
   const renderDocumentsSection = () => {
     if (!compareStage(accessStage, 'approved')) {
       return null
@@ -436,6 +504,7 @@ export default function PortalPage() {
       </header>
 
       <div className="portal-grid">
+        {renderAdminTools()}
         {renderTermsSection()}
         {renderNdaSection()}
         {renderDocumentsSection()}

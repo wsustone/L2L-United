@@ -96,14 +96,55 @@ export function AuthProvider({ children }) {
     return response.data.session
   }
 
-  const signUpWithPassword = async ({ email, password, options }) => {
-    const response = await supabase.auth.signUp({ email, password, options })
+  const callAuthEmailFunction = async (payload) => {
+    const response = await fetch('/.netlify/functions/auth-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
 
-    if (response.error) {
-      throw response.error
+    let result = null
+    try {
+      result = await response.json()
+    } catch (error) {
+      result = null
     }
 
-    return response.data.user
+    if (!response.ok) {
+      const message = result?.message ?? 'Failed to process auth email request.'
+      const error = new Error(message)
+      error.status = response.status
+      throw error
+    }
+
+    return result ?? { ok: true }
+  }
+
+  const signUpWithPassword = async ({ email, password, options }) => {
+    if (!email || !password) {
+      throw new Error('Email and password are required to request registration.')
+    }
+
+    await callAuthEmailFunction({
+      action: 'signup',
+      email,
+      password,
+      redirectTo: options?.emailRedirectTo,
+    })
+
+    return { email }
+  }
+
+  const sendInviteEmail = async ({ email, redirectTo } = {}) => {
+    if (!email) {
+      throw new Error('Email is required to send an invite.')
+    }
+
+    await callAuthEmailFunction({
+      action: 'invite',
+      email,
+      redirectTo,
+    })
   }
 
   const signOut = async () => {
@@ -112,6 +153,18 @@ export function AuthProvider({ children }) {
     if (error) {
       throw error
     }
+  }
+
+  const sendPasswordReset = async (email, { redirectTo } = {}) => {
+    if (!email) {
+      throw new Error('Email is required to request a password reset.')
+    }
+
+    await callAuthEmailFunction({
+      action: 'recovery',
+      email,
+      redirectTo,
+    })
   }
 
   const refreshProfile = async () => {
@@ -135,7 +188,9 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(state.session?.user),
       signInWithPassword,
       signUpWithPassword,
+      sendInviteEmail,
       signOut,
+      sendPasswordReset,
       refreshProfile,
     }),
     [state.session, state.profile, state.status, state.error],

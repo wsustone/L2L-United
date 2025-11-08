@@ -4,7 +4,7 @@ export default function PortalInfoPage() {
   return (
     <section className="page info">
       <div className="page-hero">
-        <h1>L2L United Portal</h1>
+        <h1>L2L United</h1>
         <p>See the latest updates and jump into the secure workspace when you’re ready.</p>
       </div>
 

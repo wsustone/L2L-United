@@ -5,15 +5,20 @@ import { useAuth } from '../providers/AuthProvider.jsx'
 
 export default function SignInPage() {
   const navigate = useNavigate()
-  const { signInWithPassword } = useAuth()
+  const { signInWithPassword, sendPasswordReset } = useAuth()
 
   const [formState, setFormState] = useState({ email: '', password: '' })
   const [status, setStatus] = useState('idle')
+  const [resetStatus, setResetStatus] = useState('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [infoMessage, setInfoMessage] = useState('')
 
   const handleChange = (event) => {
     const { name, value } = event.target
     setFormState((prev) => ({ ...prev, [name]: value }))
+    if (errorMessage) {
+      setErrorMessage('')
+    }
   }
 
   const handleSubmit = async (event) => {
@@ -27,13 +32,36 @@ export default function SignInPage() {
     try {
       setStatus('loading')
       setErrorMessage('')
+      setInfoMessage('')
       await signInWithPassword(formState)
       navigate('/portal')
     } catch (error) {
       console.error('[SignInPage] sign in failed', error)
       setErrorMessage(error.message ?? 'Unable to sign in. Please try again.')
+      setInfoMessage('')
     } finally {
       setStatus('idle')
+    }
+  }
+
+  const handlePasswordReset = async () => {
+    if (!formState.email) {
+      setErrorMessage('Enter your email to receive a password reset link.')
+      setInfoMessage('')
+      return
+    }
+
+    try {
+      setResetStatus('loading')
+      setErrorMessage('')
+      await sendPasswordReset(formState.email)
+      setInfoMessage('Password reset instructions are on the way. Check your inbox.')
+    } catch (error) {
+      console.error('[SignInPage] password reset request failed', error)
+      setErrorMessage(error.message ?? 'Unable to send reset email. Please try again.')
+      setInfoMessage('')
+    } finally {
+      setResetStatus('idle')
     }
   }
 
@@ -67,6 +95,18 @@ export default function SignInPage() {
           />
 
           {errorMessage ? <p className="auth-error">{errorMessage}</p> : null}
+          {infoMessage ? <p className="auth-success">{infoMessage}</p> : null}
+
+          <div className="auth-form-actions">
+            <button
+              type="button"
+              className="link-button"
+              onClick={handlePasswordReset}
+              disabled={resetStatus === 'loading'}
+            >
+              {resetStatus === 'loading' ? 'Sending reset email…' : 'Forgot password?'}
+            </button>
+          </div>
 
           <button type="submit" className="primary-button" disabled={status === 'loading'}>
             {status === 'loading' ? 'Signing in…' : 'Sign in'}
