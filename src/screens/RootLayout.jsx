@@ -24,9 +24,7 @@ export default function RootLayout() {
       <header className="app-header">
         <div className="app-branding">
           <Link to="/" className="app-logo" aria-label="L2L United home">
-            <img src="/images/blueL2L.png" alt="L2L United logo" />
-            <span className="app-logo-text">United</span>
-          </Link>
+            <img src="/images/Lifetime%20to%20Lifetime%20United.jpg" alt="L2L United logo" />            </Link>
         </div>
         <nav className="app-nav">
           <NavLink to="/" end className={({ isActive }) => `app-nav-link${isActive ? ' app-nav-link-active' : ''}`}>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lifetime to Lifetime United — Non-Circumvent NDA Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        color-scheme: light only;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0 auto;
+        padding: 2.5rem 2rem 4rem;
+        max-width: 800px;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.65;
+        color: #0f172a;
+        background: #f8fafc;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.85rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #0b2956;
+      }
+
+      h2 {
+        margin: 2.5rem 0 1rem;
+        font-size: 1.15rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #1f3d7a;
+      }
+
+      p {
+        margin: 0 0 1.2rem;
+        font-size: 1rem;
+      }
+
+      ul {
+        padding-left: 1.2rem;
+      }
+
+      .callout {
+        border-left: 4px solid #2563eb;
+        background: #e0edff;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.75rem;
+      }
+
+      .grid {
+        display: grid;
+        gap: 1.25rem;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        margin-bottom: 2rem;
+      }
+
+      .field {
+        border: 1px solid #cbd5f5;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        background: white;
+      }
+
+      .field label {
+        display: block;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #475569;
+        margin-bottom: 0.5rem;
+      }
+
+      .signature-block {
+        border: 1px dashed #64748b;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        background: white;
+        margin-top: 2.5rem;
+      }
+
+      .signature-label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.75rem;
+        color: #475569;
+        margin-bottom: 0.65rem;
+      }
+
+      .signature-canvas {
+        width: 100%;
+        height: 160px;
+        border: 1px solid #94a3b8;
+        border-radius: 0.75rem;
+        background: #f8fafc;
+        cursor: crosshair;
+      }
+
+      .signature-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 0.75rem 0 0;
+      }
+
+      button,
+      input[type='text'],
+      input[type='date'] {
+        font: inherit;
+        padding: 0.65rem 0.85rem;
+        border-radius: 0.65rem;
+        border: 1px solid #94a3b8;
+      }
+
+      input[type='text'],
+      input[type='date'] {
+        width: 100%;
+        background: #fff;
+      }
+
+      button {
+        background: #2563eb;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background 150ms ease;
+      }
+
+      button.secondary {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+
+      button:hover {
+        background: #1d4ed8;
+      }
+
+      button.secondary:hover {
+        background: #cbd5e1;
+      }
+
+      .signature-row {
+        display: grid;
+        gap: 1.25rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        margin-top: 1.5rem;
+      }
+
+      .print-hint {
+        margin-top: 2.5rem;
+        font-size: 0.95rem;
+        color: #475569;
+      }
+
+      @media print {
+        body {
+          background: white;
+          color: black;
+        }
+
+        button,
+        input,
+        canvas {
+          display: none !important;
+        }
+
+        .signature-block {
+          border-style: solid;
+        }
+
+        .print-hint {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Non-Circumvent &amp; Non-Disclosure Agreement</h1>
+      <p>
+        This template captures the baseline commitment for Lifetime to Lifetime United collaborations. Complete the
+        party details, review the terms, and sign digitally using the panel below before exporting to PDF or printing.
+      </p>
+    </header>
+
+    <section class="callout">
+      <strong>Instructions</strong>
+      <ol>
+        <li>Fill in the parties, effective date, and any transaction notes.</li>
+        <li>Have each participant sign using the canvas or by typing their legal name as a digital signature.</li>
+        <li>Click <em>Print / Save as PDF</em> to generate a signed copy. Upload the finalized PDF to the portal.</li>
+      </ol>
+    </section>
+
+    <section class="grid">
+      <div class="field">
+        <label for="disclosing-party">Disclosing Party</label>
+        <input id="disclosing-party" type="text" placeholder="Lifetime to Lifetime United" />
+      </div>
+      <div class="field">
+        <label for="recipient-party">Recipient Party</label>
+        <input id="recipient-party" type="text" placeholder="Recipient company or individual" />
+      </div>
+      <div class="field">
+        <label for="effective-date">Effective Date</label>
+        <input id="effective-date" type="date" />
+      </div>
+    </section>
+
+    <section>
+      <h2>Agreement Summary</h2>
+      <p>
+        The parties agree to maintain the confidentiality of proprietary information shared in connection with the
+        Lifetime to Lifetime United program and to refrain from circumventing one another in transactions introduced
+        through that relationship.
+      </p>
+      <ul>
+        <li>All confidential materials are provided solely for evaluation of potential collaborations.</li>
+        <li>
+          The recipient will not disclose, reproduce, or use the information except as expressly permitted by this
+          agreement.
+        </li>
+        <li>
+          The parties will not circumvent or bypass one another for opportunities originating from shared introductions
+          or materials.
+        </li>
+        <li>
+          The obligations in this agreement will remain in effect for three (3) years from the Effective Date unless a
+          superseding contract is executed.
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Transaction Notes</h2>
+      <p>
+        Summarize the opportunity or scope of discussions covered by this NDA (optional). This field is provided for
+        clarity when multiple NDAs are executed.
+      </p>
+      <textarea
+        style="width: 100%; min-height: 140px; border-radius: 0.75rem; border: 1px solid #cbd5f5; padding: 1rem;"
+        placeholder="Describe the contemplated collaboration, deliverables, or entities involved."
+      ></textarea>
+    </section>
+
+    <section class="signature-block">
+      <p class="signature-label">Digital signature</p>
+      <canvas id="signature-canvas" class="signature-canvas"></canvas>
+      <div class="signature-actions">
+        <button id="clear-signature" type="button" class="secondary">Clear signature</button>
+        <button id="print-document" type="button">Print / Save as PDF</button>
+      </div>
+
+      <div class="signature-row">
+        <div>
+          <label class="signature-label" for="typed-name">Typed name (digital signature)</label>
+          <input id="typed-name" type="text" placeholder="Type full legal name" />
+        </div>
+        <div>
+          <label class="signature-label" for="signature-date">Signature date</label>
+          <input id="signature-date" type="date" />
+        </div>
+      </div>
+    </section>
+
+    <section class="signature-block" style="margin-top: 1.75rem;">
+      <div class="signature-row">
+        <div>
+          <label class="signature-label" for="party-title">Title / Capacity</label>
+          <input id="party-title" type="text" placeholder="e.g., Managing Director" />
+        </div>
+        <div>
+          <label class="signature-label" for="party-email">Contact Email</label>
+          <input id="party-email" type="text" placeholder="name@example.com" />
+        </div>
+      </div>
+    </section>
+
+    <p class="print-hint">
+      After all fields and signatures are complete, use the browser print dialog to export this document as a PDF.
+      Upload the finalized PDF to the portal so the admin team can verify the NDA is signed.
+    </p>
+
+    <script>
+      const canvas = document.getElementById('signature-canvas')
+      const ctx = canvas.getContext('2d')
+      const clearButton = document.getElementById('clear-signature')
+      const printButton = document.getElementById('print-document')
+
+      const resizeCanvas = () => {
+        const dpr = window.devicePixelRatio || 1
+        const rect = canvas.getBoundingClientRect()
+        canvas.width = rect.width * dpr
+        canvas.height = rect.height * dpr
+        ctx.scale(dpr, dpr)
+        ctx.lineWidth = 2
+        ctx.lineCap = 'round'
+        ctx.strokeStyle = '#0f172a'
+      }
+
+      let drawing = false
+      let lastPoint = null
+
+      const getPoint = (event) => {
+        const rect = canvas.getBoundingClientRect()
+        const pointer = event.touches ? event.touches[0] : event
+        return {
+          x: pointer.clientX - rect.left,
+          y: pointer.clientY - rect.top,
+        }
+      }
+
+      const startDrawing = (event) => {
+        drawing = true
+        lastPoint = getPoint(event)
+      }
+
+      const draw = (event) => {
+        if (!drawing) return
+        event.preventDefault()
+        const point = getPoint(event)
+        ctx.beginPath()
+        ctx.moveTo(lastPoint.x, lastPoint.y)
+        ctx.lineTo(point.x, point.y)
+        ctx.stroke()
+        lastPoint = point
+      }
+
+      const stopDrawing = () => {
+        drawing = false
+        lastPoint = null
+      }
+
+      clearButton.addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+      })
+
+      printButton.addEventListener('click', () => {
+        window.print()
+      })
+
+      window.addEventListener('resize', () => {
+        resizeCanvas()
+      })
+
+      canvas.addEventListener('mousedown', startDrawing)
+      canvas.addEventListener('mousemove', draw)
+      canvas.addEventListener('mouseup', stopDrawing)
+      canvas.addEventListener('mouseleave', stopDrawing)
+
+      canvas.addEventListener('touchstart', (event) => {
+        startDrawing(event)
+      })
+      canvas.addEventListener('touchmove', (event) => {
+        draw(event)
+      })
+      canvas.addEventListener('touchend', stopDrawing)
+
+      resizeCanvas()
+    </script>
+  </body>
+</html>

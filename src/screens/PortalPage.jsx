@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 
 import { supabase } from '../lib/supabaseClient.js'
@@ -37,9 +37,7 @@ const STAGE_DETAILS = {
 
 const NDA_BUCKET = 'nda-workflow'
 const SECURE_DOC_BUCKET = 'secure-docs'
-const STATIC_FILES = {
-  ndaTemplate: 'static_files/Non-Circumvent NDA.pdf',
-}
+const NDA_TEMPLATE_URL = '/static_files/nda-template.html'
 
 const compareStage = (stage, target) => (STAGE_ORDER[stage] ?? -1) >= (STAGE_ORDER[target] ?? 999)
 
@@ -93,8 +91,15 @@ export default function PortalPage() {
   const [inviteStatus, setInviteStatus] = useState('idle')
   const [inviteMessage, setInviteMessage] = useState('')
 
+  const [pendingApplicants, setPendingApplicants] = useState([])
+  const [pendingStatus, setPendingStatus] = useState('idle')
+  const [pendingError, setPendingError] = useState('')
+  const [pendingMessage, setPendingMessage] = useState('')
+  const [pendingAction, setPendingAction] = useState({ id: null, type: null })
+
   const accessStage = profile?.access_stage ?? 'awaiting_admin'
   const stageInfo = STAGE_DETAILS[accessStage] ?? STAGE_DETAILS.awaiting_admin
+  const isAdmin = Boolean(profile?.is_admin)
   const hasTermsMetadata = Boolean(termsDocument?.file_version)
   const currentTermsVersion = termsDocument?.file_version ?? null
   const needsTermsRefresh = hasTermsMetadata
@@ -201,6 +206,79 @@ export default function PortalPage() {
     }
   }, [hasTermsMetadata, needsTermsRefresh, hasAcceptedCurrentTerms])
 
+  const fetchPendingApplicants = useCallback(async () => {
+    if (!isAdmin) {
+      setPendingApplicants([])
+      setPendingStatus('idle')
+      return
+    }
+
+    setPendingStatus('loading')
+    setPendingError('')
+    setPendingMessage('')
+
+    const { data, error } = await supabase.rpc('list_pending_accounts')
+
+    if (error) {
+      console.error('[PortalPage] failed to load pending applicants', error)
+      setPendingStatus('error')
+      setPendingError(error.message ?? 'Unable to load pending accounts right now.')
+      return
+    }
+
+    setPendingApplicants(data ?? [])
+    setPendingStatus('ready')
+  }, [isAdmin])
+
+  useEffect(() => {
+    fetchPendingApplicants()
+  }, [fetchPendingApplicants])
+
+  const handleUpdateAccessStage = async (profileId, nextStage, actionType) => {
+    if (!isAdmin || !profileId || !nextStage) return
+
+    setPendingAction({ id: profileId, type: actionType })
+    setPendingError('')
+    setPendingMessage('')
+
+    try {
+      const { error } = await supabase.rpc('admin_update_access_stage', {
+        p_profile_id: profileId,
+        p_next_stage: nextStage,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      await fetchPendingApplicants()
+
+      const successMessage =
+        actionType === 'approve'
+          ? 'Applicant approved. NDA access has been unlocked.'
+          : 'Applicant marked as rejected.'
+
+      setPendingMessage(successMessage)
+    } catch (error) {
+      console.error('[PortalPage] failed to update applicant stage', error)
+      setPendingError(error.message ?? 'Unable to update applicant at this time.')
+    } finally {
+      setPendingAction({ id: null, type: null })
+    }
+  }
+
+  const handleApproveApplicant = (profileId) => {
+    handleUpdateAccessStage(profileId, 'nda_available', 'approve')
+  }
+
+  const handleRejectApplicant = (profileId) => {
+    handleUpdateAccessStage(profileId, 'rejected', 'reject')
+  }
+
+  const handleRefreshPendingApplicants = () => {
+    fetchPendingApplicants()
+  }
+
   const getSignedUrl = async (bucket, path, expiresIn = 60 * 5) => {
     if (!path) {
       throw new Error('Missing storage path for requested document.')
@@ -224,32 +302,42 @@ export default function PortalPage() {
     throw lastError
   }
 
-  const handleDownloadNda = async () => {
-    setNdaDownloadStatus('loading')
+  const handleOpenNdaTemplate = () => {
+    if (!compareStage(accessStage, 'nda_available')) {
+      setNdaDownloadStatus('error')
+      setNdaMessage('An administrator will unlock the NDA template once your account is approved.')
+      return
+    }
+
+    if (!hasAcceptedCurrentTerms) {
+      setNdaDownloadStatus('error')
+      setNdaMessage('Please accept the latest terms before opening the NDA template.')
+      return
+    }
+
     setNdaMessage('')
+    window.open(NDA_TEMPLATE_URL, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleDownloadSignedNda = async () => {
+    if (!profile?.nda_file_path) {
+      setNdaDownloadStatus('error')
+      setNdaMessage('Signed NDA is not available yet.')
+      return
+    }
+
+    setNdaDownloadStatus('loading')
+    setNdaMessage('Preparing signed NDA…')
 
     try {
-      let ndaUrl = null
-
-      const { data, error } = await supabase.rpc('get_nda_template_url')
-
-      if (error) {
-        console.warn('[PortalPage] falling back to storage for NDA template', error)
-      } else {
-        ndaUrl = data ?? null
-      }
-
-      if (!ndaUrl) {
-        ndaUrl = await getSignedUrl(SECURE_DOC_BUCKET, STATIC_FILES.ndaTemplate)
-      }
-
-      window.open(ndaUrl, '_blank', 'noopener,noreferrer')
-
+      const signedUrl = await getSignedUrl(NDA_BUCKET, profile.nda_file_path)
+      window.open(signedUrl, '_blank', 'noopener,noreferrer')
       setNdaDownloadStatus('success')
+      setNdaMessage('Signed NDA opened in a new tab.')
     } catch (error) {
-      console.error('[PortalPage] failed to get NDA template', error)
+      console.error('[PortalPage] failed to download signed NDA', error)
       setNdaDownloadStatus('error')
-      setNdaMessage(error.message ?? 'Unable to retrieve NDA template at this time.')
+      setNdaMessage(error.message ?? 'Unable to retrieve the signed NDA right now.')
     }
   }
 
@@ -405,57 +493,85 @@ export default function PortalPage() {
     </section>
   )
 
-  const renderNdaSection = () => (
-    <section className="portal-card">
-      <h2>Non-Circumvent NDA</h2>
-      <p>{stageInfo.message}</p>
+  const renderNdaSection = () => {
+    const hasSignedNda = Boolean(profile?.nda_file_path)
+    const canAccessTemplate = compareStage(accessStage, 'nda_available') && hasAcceptedCurrentTerms
 
-      {!compareStage(accessStage, 'nda_available') ? (
-        <p className="status-message warning">
-          NDA download unlocks once an administrator approves your request.
-        </p>
-      ) : null}
+    return (
+      <section className="portal-card">
+        <h2>Non-Circumvent NDA</h2>
+        <p>{stageInfo.message}</p>
 
-      {compareStage(accessStage, 'nda_available') && !hasAcceptedCurrentTerms ? (
-        <p className="status-message warning">
-          Accept the latest terms before downloading the NDA template.
-        </p>
-      ) : null}
+        {!compareStage(accessStage, 'nda_available') ? (
+          <p className="status-message warning">
+            NDA download unlocks once an administrator approves your request.
+          </p>
+        ) : null}
 
-      <div className="action-row">
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={handleDownloadNda}
-          disabled={
-            !compareStage(accessStage, 'nda_available') ||
-            !hasAcceptedCurrentTerms ||
-            ndaDownloadStatus === 'loading'
-          }
-        >
-          {ndaDownloadStatus === 'loading' ? 'Preparing…' : 'Download NDA template'}
-        </button>
-      </div>
+        {compareStage(accessStage, 'nda_available') && !hasAcceptedCurrentTerms ? (
+          <p className="status-message warning">
+            Accept the latest terms before downloading or uploading the NDA.
+          </p>
+        ) : null}
 
-      {compareStage(accessStage, 'nda_available') ? (
-        <form className="upload-form" onSubmit={handleUploadNda}>
-          <label htmlFor="nda-file">Upload signed NDA</label>
-          <input id="nda-file" name="nda-file" type="file" accept=".pdf,.doc,.docx" />
-          <button type="submit" className="primary-button" disabled={ndaUploadStatus === 'loading'}>
-            {ndaUploadStatus === 'loading' ? 'Uploading…' : 'Submit signed NDA'}
+        <div className="action-row">
+          <button
+            type="button"
+            className={hasSignedNda ? 'primary-button' : 'secondary-button'}
+            onClick={hasSignedNda ? handleDownloadSignedNda : handleOpenNdaTemplate}
+            disabled={hasSignedNda ? ndaDownloadStatus === 'loading' : !canAccessTemplate}
+            title={
+              hasSignedNda
+                ? 'View the NDA you previously uploaded.'
+                : !compareStage(accessStage, 'nda_available')
+                  ? 'An administrator must approve your account before the NDA template is available.'
+                  : !hasAcceptedCurrentTerms
+                    ? 'Accept the latest terms to unlock the NDA template.'
+                    : 'Open the NDA template to review and sign.'
+            }
+          >
+            {hasSignedNda
+              ? ndaDownloadStatus === 'loading'
+                ? 'Preparing…'
+                : 'View signed NDA'
+              : 'Open NDA template'}
           </button>
-        </form>
-      ) : null}
 
-      {ndaMessage ? <p className="status-message">{ndaMessage}</p> : null}
+          {hasSignedNda ? (
+            <button type="button" className="secondary-button" onClick={handleOpenNdaTemplate}>
+              Open blank template
+            </button>
+          ) : null}
+        </div>
 
-      {profile?.nda_uploaded_at ? (
-        <p className="meta">
-          Last uploaded: {new Date(profile.nda_uploaded_at).toLocaleString()} ({profile.nda_file_path})
-        </p>
-      ) : null}
-    </section>
-  )
+        {compareStage(accessStage, 'nda_available') ? (
+          <form className="upload-form" onSubmit={handleUploadNda}>
+            <label htmlFor="nda-file">Upload signed NDA</label>
+            <input id="nda-file" name="nda-file" type="file" accept=".pdf,.doc,.docx" />
+            <button type="submit" className="primary-button" disabled={ndaUploadStatus === 'loading'}>
+              {ndaUploadStatus === 'loading' ? 'Uploading…' : 'Submit signed NDA'}
+            </button>
+          </form>
+        ) : null}
+
+        {ndaMessage ? (
+          <p
+            className={`status-message ${
+              ndaDownloadStatus === 'error' ? 'error' : ndaDownloadStatus === 'success' ? 'success' : ''
+            }`}
+          >
+            {ndaMessage}
+          </p>
+        ) : null}
+
+        {profile?.nda_uploaded_at ? (
+          <p className="meta">
+            Last uploaded: {new Date(profile.nda_uploaded_at).toLocaleString()} ({profile.nda_file_path})
+          </p>
+        ) : null}
+      </section>
+    )
+  }
 
   const renderTermsSection = () => {
     const acceptButtonLabel = termsStatus === 'loading' ? 'Recording…' : 'I agree to the terms'
@@ -518,7 +634,7 @@ export default function PortalPage() {
   }
 
   const renderAdminTools = () => {
-    if (!profile?.is_admin) {
+    if (!isAdmin) {
       return null
     }
 
@@ -526,6 +642,67 @@ export default function PortalPage() {
       <section className="portal-card">
         <h2>Admin tools</h2>
         <p>Invite collaborators to the portal. Each invite email contains a secure registration link.</p>
+
+        <div className="pending-approvals">
+          <div className="pending-approvals-header">
+            <h3>Pending account approvals</h3>
+            <button type="button" className="secondary-button" onClick={handleRefreshPendingApplicants}>
+              Refresh
+            </button>
+          </div>
+
+          {pendingStatus === 'loading' ? <p className="meta">Loading pending accounts…</p> : null}
+          {pendingError ? <p className="status-message error">{pendingError}</p> : null}
+          {pendingMessage ? <p className="status-message success">{pendingMessage}</p> : null}
+
+          {pendingStatus === 'ready' && pendingApplicants.length === 0 ? (
+            <p className="meta">No accounts are awaiting review right now.</p>
+          ) : null}
+
+          {pendingApplicants.length > 0 ? (
+            <ul className="pending-approvals-list">
+              {pendingApplicants.map((applicant) => {
+                const isUpdating = pendingAction.id === applicant.id
+                const approving = isUpdating && pendingAction.type === 'approve'
+                const rejecting = isUpdating && pendingAction.type === 'reject'
+
+                return (
+                  <li key={applicant.id} className="pending-approvals-item">
+                    <div>
+                      <h4>{applicant.full_name || applicant.email}</h4>
+                      <p className="meta">
+                        {applicant.email}
+                        {applicant.company ? ` · ${applicant.company}` : ''}
+                        {applicant.created_at
+                          ? ` · Requested ${new Date(applicant.created_at).toLocaleString()}`
+                          : ''}
+                      </p>
+                    </div>
+
+                    <div className="pending-approvals-actions">
+                      <button
+                        type="button"
+                        className="primary-button"
+                        onClick={() => handleApproveApplicant(applicant.id)}
+                        disabled={isUpdating}
+                      >
+                        {approving ? 'Approving…' : 'Approve'}
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={() => handleRejectApplicant(applicant.id)}
+                        disabled={isUpdating}
+                      >
+                        {rejecting ? 'Rejecting…' : 'Reject'}
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : null}
+        </div>
 
         <form className="auth-form" onSubmit={handleInviteSubmit}>
           <label htmlFor="invite-email">Invite email</label>

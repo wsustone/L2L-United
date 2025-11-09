@@ -52,9 +52,9 @@ a {
 }
 
 .app-logo-text {
-  letter-spacing: 0.18em;
-  font-size: 1.05rem;
-  background: linear-gradient(90deg, #38bdf8, #2563eb);
+  letter-spacing: 0.16em;
+  font-size: 1.08rem;
+  background: linear-gradient(90deg, #d5e8ff, #8abdfc 48%, #4f8ef6);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
