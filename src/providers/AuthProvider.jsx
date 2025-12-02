@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
       } catch (error) {
         if (!isMounted) return
         console.error('[AuthProvider] Failed to establish session', error)
-        setState((prev) => ({ ...prev, status: 'error', error }))
+        setState((prev) => ({ ...prev, session: null, profile: null, status: 'error', error }))
       }
     }
 
