@@ -1,65 +1,25 @@
-import { Link } from 'react-router-dom'
-
-import { useAuth } from '../providers/AuthProvider.jsx'
-
 export default function PortalInfoPage() {
-  const { isAuthenticated, status: authStatus } = useAuth()
-  const showPortalCard = authStatus === 'ready' && isAuthenticated
   return (
-    <section className="page info">
-      <div className="page-hero">
-        <h1>L2L United</h1>
-        <p>See the latest updates and jump into the secure workspace when you’re ready.</p>
-      </div>
-
-      <div className="page-content">
-        <article className="info-card">
-          <h2>Overview</h2>
-          <p>
-            L2L United partners with builders and communities to deliver flexible housing solutions.
-            Watch this space for quick announcements and timelines.
-          </p>
-        </article>
-
-        <article className="info-card">
-          <h2>Visit L2L Homes</h2>
-          <p>Preview models, specs, and inspiration from the Homes lineup.</p>
-          <p>
-            <a
-              className="primary-link"
-              href="https://www.l2lhomes.com"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              Explore L2L Homes
-            </a>
-          </p>
-        </article>
-
-        {showPortalCard ? (
-          <article className="info-card highlight">
-            <h2>Your portal</h2>
-            <p>Access agreements, roadmaps, and versioned files from your secure workspace.</p>
-            <div className="cta-row">
-              <Link className="primary-button" to="/portal">
-                Go to portal
-              </Link>
-            </div>
-          </article>
-        ) : (
-          <article className="info-card highlight">
-            <h2>Secure access</h2>
-            <p>Log in to download agreements, roadmaps, and versioned files.</p>
-            <div className="cta-row">
-              <Link className="primary-button" to="/sign-in">
-                Sign in
-              </Link>
-              <Link className="secondary-button" to="/register">
-                Request access
-              </Link>
-            </div>
-          </article>
-        )}
+    <section className="page under-construction">
+      <div className="uc-hero">
+        <p className="uc-eyebrow">Site update in progress</p>
+        <h1>We’re refreshing the L2L United experience</h1>
+        <p className="uc-lede">
+          Our team is rebuilding the public site so it better reflects the partnerships, housing
+          programs, and tools we provide. Thank you for your patience while we put the finishing
+          touches on the new release.
+        </p>
+        <div className="uc-contact-card">
+          <div>
+            <p className="uc-contact-label">Need something while we’re heads-down?</p>
+            <p className="uc-contact-copy">
+              Email us anytime and we’ll route you to the right partner lead.
+            </p>
+          </div>
+          <a className="uc-contact-link" href="mailto:support@l2lunited.com">
+            support@l2lunited.com
+          </a>
+        </div>
       </div>
     </section>
   )

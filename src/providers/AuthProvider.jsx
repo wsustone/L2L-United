@@ -13,8 +13,14 @@ const initialState = {
 
 export function AuthProvider({ children }) {
   const [state, setState] = useState(initialState)
+  const isSupabaseConfigured = Boolean(supabase)
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setState((prev) => ({ ...prev, status: 'ready' }))
+      return
+    }
+
     let isMounted = true
 
     const loadSession = async () => {
@@ -84,9 +90,16 @@ export function AuthProvider({ children }) {
       isMounted = false
       subscription.unsubscribe()
     }
-  }, [])
+  }, [isSupabaseConfigured])
+
+  const ensureSupabase = () => {
+    if (!isSupabaseConfigured) {
+      throw new Error('Authentication service is temporarily unavailable.')
+    }
+  }
 
   const signInWithPassword = async ({ email, password }) => {
+    ensureSupabase()
     const response = await supabase.auth.signInWithPassword({ email, password })
 
     if (response.error) {
@@ -97,6 +110,7 @@ export function AuthProvider({ children }) {
   }
 
   const callAuthEmailFunction = async (payload) => {
+    ensureSupabase()
     const response = await fetch('/.netlify/functions/auth-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -121,6 +135,7 @@ export function AuthProvider({ children }) {
   }
 
   const signUpWithPassword = async ({ email, password, options }) => {
+    ensureSupabase()
     if (!email || !password) {
       throw new Error('Email and password are required to request registration.')
     }
@@ -136,6 +151,7 @@ export function AuthProvider({ children }) {
   }
 
   const sendInviteEmail = async ({ email, redirectTo } = {}) => {
+    ensureSupabase()
     if (!email) {
       throw new Error('Email is required to send an invite.')
     }
@@ -148,6 +164,7 @@ export function AuthProvider({ children }) {
   }
 
   const signOut = async () => {
+    ensureSupabase()
     const { error } = await supabase.auth.signOut()
 
     if (error) {
@@ -156,6 +173,7 @@ export function AuthProvider({ children }) {
   }
 
   const sendPasswordReset = async (email, { redirectTo } = {}) => {
+    ensureSupabase()
     if (!email) {
       throw new Error('Email is required to request a password reset.')
     }
@@ -168,6 +186,7 @@ export function AuthProvider({ children }) {
   }
 
   const requestEmailChange = async (newEmail) => {
+    ensureSupabase()
     if (!state.session?.user?.email) {
       throw new Error('You must be signed in to request an email change.')
     }
@@ -191,7 +210,7 @@ export function AuthProvider({ children }) {
   }
 
   const refreshProfile = async () => {
-    if (!state.session) return null
+    if (!isSupabaseConfigured || !state.session) return null
     const { data, error } = await supabase.rpc('get_current_profile')
     if (error) {
       console.error('[AuthProvider] Failed to refresh profile', error)
