@@ -165,20 +165,18 @@ export class DocumentsAPI {
   }
 
   async deleteFolder(folderId) {
-    if (!supabase) {
-      throw new Error('Supabase is not configured')
+    const headers = await this.getAuthHeaders()
+    const response = await fetch(`${this.baseUrl}/folders/${folderId}`, {
+      method: 'DELETE',
+      headers
+    })
+    
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to delete folder')
     }
-
-    const { error } = await supabase
-      .from('folders')
-      .update({ is_active: false })
-      .eq('id', folderId)
-
-    if (error) {
-      throw new Error(`Failed to delete folder: ${error.message}`)
-    }
-
-    return { success: true }
+    
+    return response.json()
   }
 
   async shareFolderWithUser(folderId, userEmail, permissions = { can_read: true, can_write: false, can_delete: false }) {

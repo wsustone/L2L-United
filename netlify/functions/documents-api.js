@@ -235,6 +235,33 @@ const handleCreateFolder = async (userId, body) => {
   return folder
 }
 
+const handleDeleteFolder = async (userId, folderId) => {
+  if (!folderId) {
+    throw new Error('Folder ID is required')
+  }
+
+  const { data: hasAccess } = await supabaseAdmin.rpc('user_has_folder_access', {
+    folder_id: folderId,
+    user_id: userId,
+    permission_type: 'delete'
+  })
+
+  if (!hasAccess) {
+    throw new Error('Access denied: You do not have delete permission for this folder')
+  }
+
+  const { error } = await supabaseAdmin
+    .from('folders')
+    .update({ is_active: false })
+    .eq('id', folderId)
+
+  if (error) {
+    throw new Error(`Failed to delete folder: ${error.message}`)
+  }
+
+  return { success: true, message: 'Folder deleted successfully' }
+}
+
 const MAX_FILE_SIZE = 100 * 1024 * 1024
 
 const ALLOWED_MIME_TYPES = [
@@ -409,6 +436,8 @@ export const handler = async (event) => {
       result = await handleCreateFolder(auth.userId, body)
     } else if (method === 'POST' && pathParts[0] === 'folders' && pathParts[2] === 'upload') {
       result = await handleUploadFile(auth.userId, pathParts[1], body)
+    } else if (method === 'DELETE' && pathParts[0] === 'folders' && pathParts.length === 2) {
+      result = await handleDeleteFolder(auth.userId, pathParts[1])
     } else {
       return {
         statusCode: 404,

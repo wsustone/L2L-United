@@ -76,15 +76,16 @@ ALTER TABLE public.api_keys ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for folders
 -- Users can view folders they have permission to or created
+-- Using IN subquery to avoid infinite recursion
 CREATE POLICY "Users can view accessible folders" ON public.folders
   FOR SELECT
   USING (
-    auth.uid() = created_by OR
-    EXISTS (
-      SELECT 1 FROM public.folder_permissions
-      WHERE folder_permissions.folder_id = folders.id
-      AND folder_permissions.user_id = auth.uid()
-      AND folder_permissions.can_read = TRUE
+    created_by = auth.uid() OR
+    id IN (
+      SELECT folder_id 
+      FROM public.folder_permissions
+      WHERE user_id = auth.uid()
+      AND can_read = TRUE
     )
   );
 
@@ -94,28 +95,30 @@ CREATE POLICY "Authenticated users can create folders" ON public.folders
   WITH CHECK (auth.uid() = created_by);
 
 -- Users can update folders they created or have write permission
+-- Using IN subquery to avoid infinite recursion
 CREATE POLICY "Users can update their folders" ON public.folders
   FOR UPDATE
   USING (
-    auth.uid() = created_by OR
-    EXISTS (
-      SELECT 1 FROM public.folder_permissions
-      WHERE folder_permissions.folder_id = folders.id
-      AND folder_permissions.user_id = auth.uid()
-      AND folder_permissions.can_write = TRUE
+    created_by = auth.uid() OR
+    id IN (
+      SELECT folder_id 
+      FROM public.folder_permissions
+      WHERE user_id = auth.uid()
+      AND can_write = TRUE
     )
   );
 
 -- Users can delete folders they created or have delete permission
+-- Using IN subquery to avoid infinite recursion
 CREATE POLICY "Users can delete their folders" ON public.folders
   FOR DELETE
   USING (
-    auth.uid() = created_by OR
-    EXISTS (
-      SELECT 1 FROM public.folder_permissions
-      WHERE folder_permissions.folder_id = folders.id
-      AND folder_permissions.user_id = auth.uid()
-      AND folder_permissions.can_delete = TRUE
+    created_by = auth.uid() OR
+    id IN (
+      SELECT folder_id 
+      FROM public.folder_permissions
+      WHERE user_id = auth.uid()
+      AND can_delete = TRUE
     )
   );
 
