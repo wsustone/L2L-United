@@ -6,6 +6,8 @@ import RootLayout from '../screens/RootLayout.jsx'
 const PortalInfoPage = lazy(() => import('../screens/PortalInfoPage.jsx'))
 const PortalPage = lazy(() => import('../screens/PortalPage.jsx'))
 const ProfilePage = lazy(() => import('../screens/ProfilePage.jsx'))
+const DocumentsPage = lazy(() => import('../screens/DocumentsPage.jsx'))
+const ApiKeysPage = lazy(() => import('../screens/ApiKeysPage.jsx'))
 const SignInPage = lazy(() => import('../screens/SignInPage.jsx'))
 const RegisterPage = lazy(() => import('../screens/RegisterPage.jsx'))
 const PrivacyPolicyPage = lazy(() => import('../screens/PrivacyPolicyPage.jsx'))
@@ -19,6 +21,8 @@ const routes = [
       { index: true, element: <PortalInfoPage /> },
       { path: 'portal', element: <PortalPage /> },
       { path: 'profile', element: <ProfilePage /> },
+      { path: 'share', element: <DocumentsPage /> },
+      { path: 'api-keys', element: <ApiKeysPage /> },
       { path: 'sign-in', element: <SignInPage /> },
       { path: 'register', element: <RegisterPage /> },
       { path: 'reset-password', element: <ResetPasswordPage /> },
