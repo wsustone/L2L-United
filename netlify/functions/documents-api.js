@@ -235,6 +235,135 @@ const handleCreateFolder = async (userId, body) => {
   return folder
 }
 
+const MAX_FILE_SIZE = 100 * 1024 * 1024
+
+const ALLOWED_MIME_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'text/plain',
+  'text/csv',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+  'application/zip',
+  'application/x-zip-compressed',
+  'application/json',
+  'text/markdown'
+]
+
+const BLOCKED_EXTENSIONS = [
+  '.exe', '.bat', '.cmd', '.com', '.scr', '.vbs', '.js', '.jar',
+  '.msi', '.app', '.deb', '.rpm', '.dmg', '.pkg', '.sh', '.ps1'
+]
+
+const validateFile = (fileName, fileSize, mimeType) => {
+  if (!fileName || fileName.trim() === '') {
+    throw new Error('File name is required')
+  }
+
+  const fileExt = fileName.toLowerCase().substring(fileName.lastIndexOf('.'))
+  if (BLOCKED_EXTENSIONS.includes(fileExt)) {
+    throw new Error(`File type ${fileExt} is not allowed for security reasons`)
+  }
+
+  if (fileSize > MAX_FILE_SIZE) {
+    throw new Error(`File size exceeds maximum allowed size of ${MAX_FILE_SIZE / 1024 / 1024}MB`)
+  }
+
+  if (mimeType && !ALLOWED_MIME_TYPES.includes(mimeType)) {
+    throw new Error(`File type ${mimeType} is not allowed. Please upload documents, images, or archives only.`)
+  }
+
+  const sanitizedName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_')
+  if (sanitizedName !== fileName) {
+    console.warn(`[documents-api] File name sanitized from "${fileName}" to "${sanitizedName}"`)
+  }
+
+  return sanitizedName
+}
+
+const handleUploadFile = async (userId, folderId, body) => {
+  if (!folderId) {
+    throw new Error('Folder ID is required')
+  }
+
+  const { data: hasAccess } = await supabaseAdmin.rpc('user_has_folder_access', {
+    folder_id: folderId,
+    user_id: userId,
+    permission_type: 'write'
+  })
+
+  if (!hasAccess) {
+    throw new Error('Access denied: You do not have write permission for this folder')
+  }
+
+  const { file_name, file_data, file_size, mime_type, description } = body
+
+  if (!file_name || !file_data) {
+    throw new Error('File name and file data are required')
+  }
+
+  const sanitizedFileName = validateFile(file_name, file_size || 0, mime_type)
+
+  let fileBuffer
+  try {
+    fileBuffer = Buffer.from(file_data, 'base64')
+  } catch (error) {
+    throw new Error('Invalid file data: must be base64 encoded')
+  }
+
+  const actualFileSize = fileBuffer.length
+  if (actualFileSize > MAX_FILE_SIZE) {
+    throw new Error(`File size exceeds maximum allowed size of ${MAX_FILE_SIZE / 1024 / 1024}MB`)
+  }
+
+  const fileExt = sanitizedFileName.substring(sanitizedFileName.lastIndexOf('.'))
+  const fileId = crypto.randomUUID()
+  const filePath = `${folderId}/${fileId}${fileExt}`
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from('documents')
+    .upload(filePath, fileBuffer, {
+      contentType: mime_type || 'application/octet-stream',
+      upsert: false
+    })
+
+  if (uploadError) {
+    throw new Error(`Upload failed: ${uploadError.message}`)
+  }
+
+  const { data: fileRecord, error: dbError } = await supabaseAdmin
+    .from('files')
+    .insert({
+      folder_id: folderId,
+      name: sanitizedFileName,
+      description: description || '',
+      file_path: filePath,
+      file_size: actualFileSize,
+      mime_type: mime_type || 'application/octet-stream',
+      uploaded_by: userId
+    })
+    .select()
+    .single()
+
+  if (dbError) {
+    await supabaseAdmin.storage.from('documents').remove([filePath])
+    throw new Error(`Failed to save file metadata: ${dbError.message}`)
+  }
+
+  return {
+    ...fileRecord,
+    message: 'File uploaded successfully'
+  }
+}
+
 export const handler = async (event) => {
   const origin = event.headers?.origin
   const headers = buildHeaders(origin)
@@ -276,8 +405,10 @@ export const handler = async (event) => {
       result = await handleGetFiles(auth.userId, pathParts[1])
     } else if (method === 'GET' && pathParts[0] === 'files' && pathParts[2] === 'download') {
       result = await handleGetFileDownloadUrl(auth.userId, pathParts[1])
-    } else if (method === 'POST' && pathParts[0] === 'folders') {
+    } else if (method === 'POST' && pathParts[0] === 'folders' && pathParts.length === 1) {
       result = await handleCreateFolder(auth.userId, body)
+    } else if (method === 'POST' && pathParts[0] === 'folders' && pathParts[2] === 'upload') {
+      result = await handleUploadFile(auth.userId, pathParts[1], body)
     } else {
       return {
         statusCode: 404,

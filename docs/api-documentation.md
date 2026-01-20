@@ -153,7 +153,100 @@ curl -X GET "https://www.l2lunited.com/.netlify/functions/documents-api/folders/
 ]
 ```
 
-### 5. Get File Download URL
+### 5. Upload File to Folder
+
+Upload a file to an existing folder. Requires write permission to the folder.
+
+**Endpoint:** `POST /folders/{folder_id}/upload`
+
+**File Restrictions:**
+- **Maximum file size:** 100 MB
+- **Allowed file types:** PDF, Word, Excel, PowerPoint, text files, images (JPEG, PNG, GIF, WebP, SVG), ZIP archives, JSON, Markdown
+- **Blocked extensions:** .exe, .bat, .cmd, .com, .scr, .vbs, .js, .jar, .msi, .app, .deb, .rpm, .dmg, .pkg, .sh, .ps1
+
+**Request Body:**
+```json
+{
+  "file_name": "document.pdf",
+  "file_data": "base64_encoded_file_content",
+  "file_size": 1048576,
+  "mime_type": "application/pdf",
+  "description": "Optional file description"
+}
+```
+
+**Example Request (Node.js):**
+```javascript
+const fs = require('fs');
+const axios = require('axios');
+
+const fileBuffer = fs.readFileSync('document.pdf');
+const base64Data = fileBuffer.toString('base64');
+
+const response = await axios.post(
+  'https://www.l2lunited.com/.netlify/functions/documents-api/folders/folder-uuid/upload',
+  {
+    file_name: 'document.pdf',
+    file_data: base64Data,
+    file_size: fileBuffer.length,
+    mime_type: 'application/pdf',
+    description: 'Important document'
+  },
+  {
+    headers: {
+      'X-API-Key': 'l2l_your_api_key_here',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+```
+
+**Example Request (Python):**
+```python
+import base64
+import requests
+
+with open('document.pdf', 'rb') as f:
+    file_data = base64.b64encode(f.read()).decode('utf-8')
+
+response = requests.post(
+    'https://www.l2lunited.com/.netlify/functions/documents-api/folders/folder-uuid/upload',
+    headers={'X-API-Key': 'l2l_your_api_key_here'},
+    json={
+        'file_name': 'document.pdf',
+        'file_data': file_data,
+        'file_size': len(file_data),
+        'mime_type': 'application/pdf',
+        'description': 'Important document'
+    }
+)
+```
+
+**Example Response:**
+```json
+{
+  "id": "file-uuid",
+  "folder_id": "folder-uuid",
+  "name": "document.pdf",
+  "description": "Important document",
+  "file_path": "folder-uuid/file-uuid.pdf",
+  "file_size": 1048576,
+  "mime_type": "application/pdf",
+  "uploaded_by": "user-uuid",
+  "created_at": "2024-01-20T11:00:00Z",
+  "updated_at": "2024-01-20T11:00:00Z",
+  "is_active": true,
+  "message": "File uploaded successfully"
+}
+```
+
+**Validation Errors:**
+- `400 Bad Request`: File name or data missing, invalid base64 encoding
+- `403 Forbidden`: No write permission to folder
+- `413 Payload Too Large`: File exceeds 100 MB limit
+- `415 Unsupported Media Type`: File type not allowed
+
+### 6. Get File Download URL
 
 Get a signed URL to download a specific file. The URL is valid for 1 hour.
 
@@ -265,6 +358,7 @@ Currently, there are no rate limits enforced. However, please be respectful of t
 
 ```javascript
 const axios = require('axios');
+const fs = require('fs');
 
 class L2LDocumentsClient {
   constructor(apiKey) {
@@ -291,6 +385,52 @@ class L2LDocumentsClient {
     );
     
     return response.data;
+  }
+
+  async uploadFile(folderId, filePath, description = '') {
+    const fileBuffer = fs.readFileSync(filePath);
+    const base64Data = fileBuffer.toString('base64');
+    const fileName = filePath.split('/').pop();
+    
+    const response = await axios.post(
+      `${this.baseUrl}/folders/${folderId}/upload`,
+      {
+        file_name: fileName,
+        file_data: base64Data,
+        file_size: fileBuffer.length,
+        mime_type: this.getMimeType(fileName),
+        description
+      },
+      { 
+        headers: { 
+          'X-API-Key': this.apiKey,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    return response.data;
+  }
+
+  getMimeType(fileName) {
+    const ext = fileName.toLowerCase().split('.').pop();
+    const mimeTypes = {
+      'pdf': 'application/pdf',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'xls': 'application/vnd.ms-excel',
+      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'txt': 'text/plain',
+      'csv': 'text/csv',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'zip': 'application/zip',
+      'json': 'application/json',
+      'md': 'text/markdown'
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
   }
 
   async downloadFile(fileId) {
@@ -329,21 +469,31 @@ async function main() {
     const folders = await client.getFolders();
     console.log('Folders:', folders);
     
-    // Get files in a folder
-    if (folders.length > 0) {
-      const files = await client.getFiles(folders[0].id);
-      console.log('Files:', files);
-      
-      // Download a file
-      if (files.length > 0) {
-        const fileData = await client.downloadFile(files[0].id);
-        console.log('Downloaded file size:', fileData.length);
-      }
-    }
-    
     // Create a new folder
     const newFolder = await client.createFolder('API Test Folder', 'Created via API');
     console.log('Created folder:', newFolder);
+    
+    // Upload a file to the folder
+    const uploadedFile = await client.uploadFile(
+      newFolder.id,
+      './document.pdf',
+      'Uploaded via API'
+    );
+    console.log('Uploaded file:', uploadedFile);
+    
+    // Get files in the folder
+    const files = await client.getFiles(newFolder.id);
+    console.log('Files:', files);
+    
+    // Download a file
+    if (files.length > 0) {
+      const fileData = await client.downloadFile(files[0].id);
+      console.log('Downloaded file size:', fileData.length);
+      
+      // Save downloaded file
+      fs.writeFileSync('./downloaded_' + files[0].name, fileData);
+      console.log('File saved as:', './downloaded_' + files[0].name);
+    }
   } catch (error) {
     console.error('Error:', error.response?.data || error.message);
   }
@@ -356,6 +506,8 @@ main();
 
 ```python
 import requests
+import base64
+import mimetypes
 
 class L2LDocumentsClient:
     def __init__(self, api_key):
@@ -373,6 +525,25 @@ class L2LDocumentsClient:
     def get_files(self, folder_id):
         url = f"{self.base_url}/folders/{folder_id}/files"
         response = requests.get(url, headers=self.headers)
+        response.raise_for_status()
+        return response.json()
+    
+    def upload_file(self, folder_id, file_path, description=''):
+        with open(file_path, 'rb') as f:
+            file_data = base64.b64encode(f.read()).decode('utf-8')
+        
+        file_name = file_path.split('/')[-1]
+        mime_type = mimetypes.guess_type(file_path)[0] or 'application/octet-stream'
+        
+        url = f"{self.base_url}/folders/{folder_id}/upload"
+        data = {
+            'file_name': file_name,
+            'file_data': file_data,
+            'file_size': len(file_data),
+            'mime_type': mime_type,
+            'description': description
+        }
+        response = requests.post(url, headers=self.headers, json=data)
         response.raise_for_status()
         return response.json()
     
@@ -406,19 +577,31 @@ try:
     folders = client.get_folders()
     print('Folders:', folders)
     
-    # Get files in a folder
-    if folders:
-        files = client.get_files(folders[0]['id'])
-        print('Files:', files)
-        
-        # Download a file
-        if files:
-            file_data = client.download_file(files[0]['id'])
-            print(f'Downloaded file size: {len(file_data)} bytes')
-    
     # Create a new folder
     new_folder = client.create_folder('API Test Folder', 'Created via API')
     print('Created folder:', new_folder)
+    
+    # Upload a file to the folder
+    uploaded_file = client.upload_file(
+        new_folder['id'],
+        './document.pdf',
+        'Uploaded via API'
+    )
+    print('Uploaded file:', uploaded_file)
+    
+    # Get files in the folder
+    files = client.get_files(new_folder['id'])
+    print('Files:', files)
+    
+    # Download a file
+    if files:
+        file_data = client.download_file(files[0]['id'])
+        print(f'Downloaded file size: {len(file_data)} bytes')
+        
+        # Save downloaded file
+        with open(f"./downloaded_{files[0]['name']}", 'wb') as f:
+            f.write(file_data)
+        print(f"File saved as: ./downloaded_{files[0]['name']}")
     
 except requests.exceptions.HTTPError as e:
     print(f'Error: {e.response.json()}')
