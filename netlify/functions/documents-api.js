@@ -217,6 +217,18 @@ const handleCreateFolder = async (userId, body) => {
     }
   }
 
+  const { data: existingFolder } = await supabaseAdmin
+    .from('folders')
+    .select('id, name')
+    .eq('name', name)
+    .eq('parent_id', parent_id || null)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (existingFolder) {
+    return existingFolder
+  }
+
   const { data: folder, error } = await supabaseAdmin
     .from('folders')
     .insert({
@@ -338,6 +350,22 @@ const handleUploadFile = async (userId, folderId, body) => {
   }
 
   const sanitizedFileName = validateFile(file_name, file_size || 0, mime_type)
+
+  const { data: existingFile } = await supabaseAdmin
+    .from('files')
+    .select('id, name, file_path')
+    .eq('folder_id', folderId)
+    .eq('name', sanitizedFileName)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (existingFile) {
+    return {
+      ...existingFile,
+      message: 'File with this name already exists in folder',
+      skipped: true
+    }
+  }
 
   let fileBuffer
   try {

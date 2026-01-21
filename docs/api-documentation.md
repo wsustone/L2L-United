@@ -90,6 +90,8 @@ Create a new folder at the root level or within a parent folder.
 
 **Endpoint:** `POST /folders`
 
+**Duplicate Handling:** If a folder with the same name already exists in the same parent folder, the existing folder will be returned instead of creating a duplicate.
+
 **Request Body:**
 ```json
 {
@@ -125,6 +127,8 @@ curl -X POST "https://www.l2lunited.com/.netlify/functions/documents-api/folders
 }
 ```
 
+**Note:** The API is idempotent - calling this endpoint multiple times with the same folder name in the same location will return the same folder without creating duplicates.
+
 ### 4. List Files in Folder
 
 Get all files within a specific folder.
@@ -158,6 +162,8 @@ curl -X GET "https://www.l2lunited.com/.netlify/functions/documents-api/folders/
 Upload a file to an existing folder. Requires write permission to the folder.
 
 **Endpoint:** `POST /folders/{folder_id}/upload`
+
+**Duplicate Handling:** If a file with the same name already exists in the folder, the existing file metadata will be returned with a `skipped: true` flag, and no new file will be uploaded. This prevents duplicate files and wasted storage.
 
 **File Restrictions:**
 - **Maximum file size:** 100 MB
@@ -222,7 +228,7 @@ response = requests.post(
 )
 ```
 
-**Example Response:**
+**Example Response (New Upload):**
 ```json
 {
   "id": "file-uuid",
@@ -237,6 +243,17 @@ response = requests.post(
   "updated_at": "2024-01-20T11:00:00Z",
   "is_active": true,
   "message": "File uploaded successfully"
+}
+```
+
+**Example Response (Duplicate File):**
+```json
+{
+  "id": "existing-file-uuid",
+  "name": "document.pdf",
+  "file_path": "folder-uuid/existing-file-uuid.pdf",
+  "message": "File with this name already exists in folder",
+  "skipped": true
 }
 ```
 
