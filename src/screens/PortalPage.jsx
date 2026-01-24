@@ -71,7 +71,7 @@ const resolveDocumentPath = (document, fallbackTitle) => {
 }
 
 export default function PortalPage() {
-  const { isAuthenticated, status: authStatus, profile, refreshProfile, sendInviteEmail } = useAuth()
+  const { isAuthenticated, status: authStatus, profile, refreshProfile, sendInviteEmail, user } = useAuth()
 
   const [ndaDownloadStatus, setNdaDownloadStatus] = useState('idle')
   const [ndaUploadStatus, setNdaUploadStatus] = useState('idle')
@@ -789,6 +789,8 @@ export default function PortalPage() {
     return 'badge neutral'
   }, [accessStage])
 
+  const isEmailVerified = Boolean(user?.email_confirmed_at || user?.confirmed_at)
+
   if (authStatus === 'loading') {
     return <div className="page portal-page">Loading your portal…</div>
   }
@@ -805,6 +807,11 @@ export default function PortalPage() {
           <p>Manage access, agreements, and downloads in one place.</p>
         </div>
         <div className="portal-header-actions">
+          {isEmailVerified ? (
+            <Link className="secondary-button" to="/share">
+              Open shared folder
+            </Link>
+          ) : null}
           <span className={stageBadgeClass}>{stageInfo.label}</span>
         </div>
       </header>
