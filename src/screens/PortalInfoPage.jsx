@@ -1,8 +1,15 @@
+import { Link } from 'react-router-dom'
+
 export default function PortalInfoPage() {
   return (
     <section className="page under-construction">
       <div className="uc-hero">
-        <p className="uc-eyebrow">Site update in progress</p>
+        <div className="uc-hero-top">
+          <p className="uc-eyebrow">Site update in progress</p>
+          <Link className="primary-link" to="/sign-in">
+            Sign in
+          </Link>
+        </div>
         <h1>We’re refreshing the L2L United experience</h1>
         <p className="uc-lede">
           Our team is rebuilding the public site so it better reflects the partnerships, housing
@@ -20,6 +27,7 @@ export default function PortalInfoPage() {
             support@l2lunited.com
           </a>
         </div>
+
       </div>
     </section>
   )

@@ -7,6 +7,13 @@
   background-color: #f4f6fb;
 }
 
+.uc-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 * {
   box-sizing: border-box;
 }
