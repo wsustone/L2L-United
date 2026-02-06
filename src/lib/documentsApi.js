@@ -95,38 +95,41 @@ export class DocumentsAPI {
       throw new Error('Supabase is not configured')
     }
 
-    const fileExt = file.name.split('.').pop()
-    const fileId = crypto.randomUUID()
-    const filePath = `${folderId}/${fileId}.${fileExt}`
+    const headers = await this.getAuthHeaders()
+    const fileBuffer = await file.arrayBuffer()
+    const base64Data = this.arrayBufferToBase64(fileBuffer)
 
-    const { error: uploadError } = await supabase.storage
-      .from('documents')
-      .upload(filePath, file)
-
-    if (uploadError) {
-      throw new Error(`Upload failed: ${uploadError.message}`)
-    }
-
-    const { data: fileRecord, error: dbError } = await supabase
-      .from('files')
-      .insert({
-        folder_id: folderId,
-        name: metadata.name || file.name,
+    const response = await fetch(`${this.baseUrl}/folders/${folderId}/upload`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        file_name: metadata.name || file.name,
         description: metadata.description || '',
-        file_path: filePath,
         file_size: file.size,
-        mime_type: file.type,
-        uploaded_by: (await supabase.auth.getUser()).data.user.id
+        mime_type: file.type || 'application/octet-stream',
+        file_data: base64Data
       })
-      .select()
-      .single()
+    })
 
-    if (dbError) {
-      await supabase.storage.from('documents').remove([filePath])
-      throw new Error(`Failed to save file metadata: ${dbError.message}`)
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Upload failed' }))
+      throw new Error(error.error || 'Upload failed')
     }
 
-    return fileRecord
+    return response.json()
+  }
+
+  arrayBufferToBase64(buffer) {
+    let binary = ''
+    const bytes = new Uint8Array(buffer)
+    const chunkSize = 0x8000
+
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, i + chunkSize)
+      binary += String.fromCharCode(...chunk)
+    }
+
+    return btoa(binary)
   }
 
   async deleteFile(fileId) {
