@@ -137,34 +137,18 @@ export class DocumentsAPI {
       throw new Error('Supabase is not configured')
     }
 
-    const { data: file, error: fetchError } = await supabase
-      .from('files')
-      .select('file_path')
-      .eq('id', fileId)
-      .single()
+    const headers = await this.getAuthHeaders()
+    const response = await fetch(`${this.baseUrl}/files/${fileId}`, {
+      method: 'DELETE',
+      headers
+    })
 
-    if (fetchError) {
-      throw new Error('File not found')
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to delete file' }))
+      throw new Error(error.error || 'Failed to delete file')
     }
 
-    const { error: storageError } = await supabase.storage
-      .from('documents')
-      .remove([file.file_path])
-
-    if (storageError) {
-      console.error('Failed to delete file from storage:', storageError)
-    }
-
-    const { error: dbError } = await supabase
-      .from('files')
-      .update({ is_active: false })
-      .eq('id', fileId)
-
-    if (dbError) {
-      throw new Error(`Failed to delete file: ${dbError.message}`)
-    }
-
-    return { success: true }
+    return response.json()
   }
 
   async deleteFolder(folderId) {
