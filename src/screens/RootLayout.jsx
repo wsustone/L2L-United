@@ -46,6 +46,9 @@ export default function RootLayout() {
             {isHelpMenuOpen ? (
               <div className="help-menu-panel" role="dialog" aria-label="Help options">
                 <p>Need assistance? Email our team and we’ll get back promptly.</p>
+                <Link to="/support" className="help-menu-link">
+                  Support page
+                </Link>
                 <a href="mailto:support@l2lunited.com" className="help-menu-link">
                   support@l2lunited.com
                 </a>

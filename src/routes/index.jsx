@@ -12,6 +12,7 @@ const SignInPage = lazy(() => import('../screens/SignInPage.jsx'))
 const RegisterPage = lazy(() => import('../screens/RegisterPage.jsx'))
 const PrivacyPolicyPage = lazy(() => import('../screens/PrivacyPolicyPage.jsx'))
 const ResetPasswordPage = lazy(() => import('../screens/ResetPasswordPage.jsx'))
+const SupportPage = lazy(() => import('../screens/SupportPage.jsx'))
 
 const routes = [
   {
@@ -27,6 +28,7 @@ const routes = [
       { path: 'register', element: <RegisterPage /> },
       { path: 'reset-password', element: <ResetPasswordPage /> },
       { path: 'privacy-policy', element: <PrivacyPolicyPage /> },
+      { path: 'support', element: <SupportPage /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

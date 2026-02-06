@@ -1136,6 +1136,132 @@ a {
   transition: border-color 150ms ease;
 }
 
+.upload-drop-zone {
+  border: 2px dashed #cbd5f5;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: #f8fafc;
+  color: #475467;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+
+.upload-drop-zone.drag-active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.drop-zone-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.drop-zone-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: #667085;
+}
+
+.upload-file-list {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #f9fafb;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.upload-file-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upload-file-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.upload-file-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.upload-file-list-details {
+  flex: 1;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.upload-file-list li .file-name {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.upload-file-list li .file-meta {
+  font-size: 0.85rem;
+  color: #667085;
+  margin-left: 0.25rem;
+}
+
+.upload-file-list li button {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upload-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.upload-status-pending {
+  color: #475467;
+}
+
+.upload-status-uploading {
+  color: #2563eb;
+}
+
+.upload-status-success {
+  color: #15803d;
+}
+
+.upload-status-error {
+  color: #dc2626;
+}
+
+.upload-progress-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.upload-progress-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb, #38bdf8);
+  transition: width 200ms ease;
+}
+
 .modal-content input:focus,
 .modal-content textarea:focus {
   outline: none;

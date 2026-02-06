@@ -15,8 +15,10 @@ export default function DocumentsPage() {
   const [showShareFolder, setShowShareFolder] = useState(false)
   const [folderName, setFolderName] = useState('')
   const [folderDescription, setFolderDescription] = useState('')
-  const [uploadFile, setUploadFile] = useState(null)
+  const [uploadFiles, setUploadFiles] = useState([])
+  const [dragActive, setDragActive] = useState(false)
   const [fileDescription, setFileDescription] = useState('')
+  const [uploadStatus, setUploadStatus] = useState({})
   const [shareEmail, setShareEmail] = useState('')
   const [sharePermissions, setSharePermissions] = useState({ can_read: true, can_write: false, can_delete: false })
   const [actionLoading, setActionLoading] = useState(false)
@@ -99,22 +101,158 @@ export default function DocumentsPage() {
     }
   }
 
+  const generateFileKey = (file) => `${file.name}-${file.size}-${file.lastModified}`
+
+  const handleFileSelection = (fileList) => {
+    if (!fileList?.length) return
+
+    setUploadFiles((prev) => {
+      const existingKeys = new Set(prev.map(generateFileKey))
+      const newFiles = []
+
+      Array.from(fileList).forEach((file) => {
+        const key = generateFileKey(file)
+        if (!existingKeys.has(key)) {
+          existingKeys.add(key)
+          newFiles.push(file)
+        }
+      })
+
+      if (!newFiles.length) {
+        return prev
+      }
+
+      setUploadStatus((status) => {
+        const updatedStatus = { ...status }
+        newFiles.forEach((file) => {
+          const key = generateFileKey(file)
+          updatedStatus[key] = {
+            state: 'pending',
+            progress: 0,
+            error: null
+          }
+        })
+        return updatedStatus
+      })
+
+      return [...prev, ...newFiles]
+    })
+  }
+
+  const handleFileInputChange = (e) => {
+    handleFileSelection(e.target.files)
+    e.target.value = ''
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!dragActive) {
+      setDragActive(true)
+    }
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.target === e.currentTarget) {
+      setDragActive(false)
+    }
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    handleFileSelection(e.dataTransfer.files)
+  }
+
+  const handleRemoveFile = (index) => {
+    setUploadFiles((prev) => {
+      const fileToRemove = prev[index]
+      const next = prev.filter((_, i) => i !== index)
+      if (fileToRemove) {
+        const key = generateFileKey(fileToRemove)
+        setUploadStatus((status) => {
+          const { [key]: _, ...rest } = status
+          return rest
+        })
+      }
+      return next
+    })
+  }
+
+  const handleClearFiles = () => {
+    setUploadFiles([])
+    setUploadStatus({})
+  }
+
   const handleFileUpload = async (e) => {
     e.preventDefault()
-    if (!uploadFile || !currentFolder) return
+    if (!uploadFiles.length || !currentFolder) return
 
     try {
       setActionLoading(true)
       setError('')
-      await documentsApi.uploadFile(currentFolder, uploadFile, {
-        description: fileDescription
-      })
-      setUploadFile(null)
-      setFileDescription('')
-      setShowUploadFile(false)
-      await loadFolders()
+      const failedUploads = []
+      const successfulUploads = []
+
+      for (const file of uploadFiles) {
+        const key = generateFileKey(file)
+        setUploadStatus((status) => ({
+          ...status,
+          [key]: {
+            state: 'uploading',
+            progress: 5,
+            error: null
+          }
+        }))
+
+        try {
+          await documentsApi.uploadFile(currentFolder, file, {
+            description: fileDescription
+          })
+          successfulUploads.push(file.name)
+          setUploadStatus((status) => ({
+            ...status,
+            [key]: {
+              state: 'success',
+              progress: 100,
+              error: null
+            }
+          }))
+        } catch (err) {
+          console.error(`Failed to upload file ${file.name}:`, err)
+          failedUploads.push({ name: file.name, message: err.message })
+          setUploadStatus((status) => ({
+            ...status,
+            [key]: {
+              state: 'error',
+              progress: 0,
+              error: err.message
+            }
+          }))
+        }
+      }
+
+      if (successfulUploads.length > 0) {
+        await loadFolders()
+      }
+
+      if (failedUploads.length > 0) {
+        setUploadFiles((prev) => prev.filter((file) => failedUploads.some((failed) => failed.name === file.name)))
+        const failureMessages = failedUploads
+          .map((failure) => `${failure.name}: ${failure.message}`)
+          .join('\n')
+        setError(`Some files failed to upload:\n${failureMessages}`)
+      } else {
+        setShowUploadFile(false)
+        setUploadFiles([])
+        setFileDescription('')
+        setUploadStatus({})
+      }
     } catch (err) {
-      console.error('Failed to upload file:', err)
+      console.error('Failed to upload files:', err)
       setError(err.message)
     } finally {
       setActionLoading(false)
@@ -391,13 +529,67 @@ export default function DocumentsPage() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Upload File</h2>
             <form onSubmit={handleFileUpload}>
-              <label htmlFor="file-upload">Select File</label>
+              <label htmlFor="file-upload">Select Files</label>
               <input
                 id="file-upload"
                 type="file"
-                onChange={(e) => setUploadFile(e.target.files[0])}
-                required
+                multiple
+                onChange={handleFileInputChange}
               />
+
+              <div
+                className={`upload-drop-zone${dragActive ? ' drag-active' : ''}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <p className="drop-zone-title">Drag & Drop Files</p>
+                <p className="drop-zone-subtitle">or click above to browse up to 20 files at a time.</p>
+              </div>
+
+              {uploadFiles.length > 0 && (
+                <div className="upload-file-list">
+                  <div className="upload-file-list-header">
+                    <strong>Selected Files ({uploadFiles.length})</strong>
+                    <button type="button" className="link-button" onClick={handleClearFiles}>
+                      Clear All
+                    </button>
+                  </div>
+                  <ul>
+                    {uploadFiles.map((file, index) => {
+                      const key = generateFileKey(file)
+                      const status = uploadStatus[key] || { state: 'pending', progress: 0 }
+                      return (
+                        <li key={`${file.name}-${index}`}>
+                          <div className="upload-file-list-details">
+                            <div>
+                              <span className="file-name">{file.name}</span>
+                              <span className="file-meta">{formatFileSize(file.size)}</span>
+                            </div>
+                            <div className={`upload-status upload-status-${status.state}`}>
+                              {status.state === 'pending' && 'Pending'}
+                              {status.state === 'uploading' && 'Uploading...'}
+                              {status.state === 'success' && 'Uploaded'}
+                              {status.state === 'error' && (status.error || 'Failed')}
+                            </div>
+                            <div className="upload-progress-bar">
+                              <div
+                                className="upload-progress-bar-fill"
+                                style={{ width: `${status.progress || 0}%` }}
+                              />
+                            </div>
+                          </div>
+                          {status.state !== 'uploading' && (
+                            <button type="button" onClick={() => handleRemoveFile(index)}>
+                              Remove
+                            </button>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
 
               <label htmlFor="file-description">Description (optional)</label>
               <textarea
@@ -412,8 +604,8 @@ export default function DocumentsPage() {
                 <button type="button" onClick={() => setShowUploadFile(false)} className="secondary-button">
                   Cancel
                 </button>
-                <button type="submit" className="primary-button" disabled={actionLoading || !uploadFile}>
-                  {actionLoading ? 'Uploading...' : 'Upload File'}
+                <button type="submit" className="primary-button" disabled={actionLoading || !uploadFiles.length}>
+                  {actionLoading ? 'Uploading...' : `Upload ${uploadFiles.length > 1 ? 'Files' : 'File'}`}
                 </button>
               </div>
             </form>
