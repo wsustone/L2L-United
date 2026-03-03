@@ -493,12 +493,51 @@ export default function PortalPage() {
     </section>
   )
 
+  const renderDirectoryHub = () => (
+    <section className="portal-card portal-directory-hub">
+      <p className="portal-directory-eyebrow">Primary workspace</p>
+      <h2>File Directory</h2>
+      <p>
+        Upload, organize, and share files from one workspace. This is now the center of your logged-in
+        experience.
+      </p>
+
+      <div className="portal-directory-actions">
+        <Link className="primary-link portal-directory-cta" to="/share">
+          Open file directory
+        </Link>
+        <p className="meta">Use drag/drop uploads and folder sharing to keep collaboration moving quickly.</p>
+      </div>
+
+      <div className="portal-directory-stats" aria-label="Directory status">
+        <div className="portal-stat-card">
+          <span>Access stage</span>
+          <strong>{stageInfo.label}</strong>
+        </div>
+        <div className="portal-stat-card">
+          <span>Terms status</span>
+          <strong>{hasAcceptedCurrentTerms ? 'Accepted' : 'Pending'}</strong>
+        </div>
+        <div className="portal-stat-card">
+          <span>Resource docs</span>
+          <strong>{documentsStatus === 'ready' ? documents.length : '—'}</strong>
+        </div>
+      </div>
+
+      {!isEmailVerified ? (
+        <p className="status-message warning">
+          Verify your email to make sure shared-folder notifications and invite links work correctly.
+        </p>
+      ) : null}
+    </section>
+  )
+
   const renderNdaSection = () => {
     const hasSignedNda = Boolean(profile?.nda_file_path)
     const canAccessTemplate = compareStage(accessStage, 'nda_available') && hasAcceptedCurrentTerms
 
     return (
-      <section className="portal-card">
+      <section className="portal-card portal-card-compact">
         <h2>Non-Circumvent NDA</h2>
         <p>{stageInfo.message}</p>
 
@@ -579,7 +618,7 @@ export default function PortalPage() {
     const acceptedAt = profile?.terms_agreed_at ? new Date(profile.terms_agreed_at) : null
 
     return (
-      <section className="portal-card">
+      <section className="portal-card portal-card-compact">
         <h2>Terms &amp; Conditions</h2>
         <p>
           Review the program terms and confirm acceptance. You must agree to the terms before accessing
@@ -639,7 +678,7 @@ export default function PortalPage() {
     }
 
     return (
-      <section className="portal-card">
+      <section className="portal-card portal-card-compact">
         <h2>Admin tools</h2>
         <p>Invite collaborators to the portal. Each invite email contains a secure registration link.</p>
 
@@ -741,8 +780,8 @@ export default function PortalPage() {
     }
 
     return (
-      <section className="portal-card">
-        <h2>Available documents</h2>
+      <section className="portal-card portal-documents-card">
+        <h2>Resource library</h2>
         <p>Download the latest resources. Each download is recorded for tracking purposes.</p>
 
         {!hasAcceptedCurrentTerms ? (
@@ -803,24 +842,24 @@ export default function PortalPage() {
     <section className="page portal-page">
       <header className="portal-header">
         <div>
-          <h1>Portal</h1>
-          <p>Manage access, agreements, and downloads in one place.</p>
+          <h1>Portal Command Center</h1>
+          <p>File directory first, with compliance and account tools in a compact utility rail.</p>
         </div>
         <div className="portal-header-actions">
-          {isEmailVerified ? (
-            <Link className="secondary-button" to="/share">
-              Open shared folder
-            </Link>
-          ) : null}
           <span className={stageBadgeClass}>{stageInfo.label}</span>
         </div>
       </header>
 
-      <div className="portal-grid">
-        {renderAdminTools()}
-        {renderTermsSection()}
-        {renderNdaSection()}
-        {renderDocumentsSection()}
+      <div className="portal-command-layout">
+        <div className="portal-primary-column">
+          {renderDirectoryHub()}
+          {renderDocumentsSection()}
+        </div>
+        <aside className="portal-secondary-column">
+          {renderTermsSection()}
+          {renderNdaSection()}
+          {renderAdminTools()}
+        </aside>
       </div>
     </section>
   )
