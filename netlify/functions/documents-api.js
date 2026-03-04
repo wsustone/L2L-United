@@ -1,5 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import mammoth from 'mammoth'
+import * as XLSX from 'xlsx'
+import HTMLtoDOCX from 'html-to-docx'
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -234,6 +237,183 @@ const handleGetFileDownloadUrl = async (userId, fileId) => {
   }
 
   return { downloadUrl: signedUrl.signedUrl, expiresIn: 3600 }
+}
+
+const EDITABLE_MIME_TYPES = new Set([
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
+  'text/plain',
+  'text/csv',
+  'text/markdown',
+  'application/json',
+])
+
+const handleGetFileContent = async (userId, fileId) => {
+  const { data: file, error: fileError } = await supabaseAdmin
+    .from('files')
+    .select('folder_id, file_path, mime_type, name')
+    .eq('id', fileId)
+    .eq('is_active', true)
+    .single()
+
+  if (fileError || !file) {
+    throw new Error('File not found')
+  }
+
+  const { data: hasAccess } = await supabaseAdmin.rpc('user_has_folder_access', {
+    folder_id: file.folder_id,
+    user_id: userId,
+    permission_type: 'read'
+  })
+
+  if (!hasAccess) {
+    throw new Error('Access denied to this file')
+  }
+
+  if (!EDITABLE_MIME_TYPES.has(file.mime_type)) {
+    throw createHttpError('This file type cannot be edited in the browser', 400)
+  }
+
+  const { data: fileBlob, error: downloadError } = await supabaseAdmin.storage
+    .from('documents')
+    .download(file.file_path)
+
+  if (downloadError) {
+    throw new Error(`Failed to load file: ${downloadError.message}`)
+  }
+
+  const buffer = Buffer.from(await fileBlob.arrayBuffer())
+  const mimeType = file.mime_type
+
+  if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    const result = await mammoth.convertToHtml({ buffer })
+    return { contentType: 'html', content: result.value, mimeType }
+  }
+
+  if (
+    mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+    mimeType === 'application/vnd.ms-excel'
+  ) {
+    const workbook = XLSX.read(buffer, { type: 'buffer' })
+    const sheets = workbook.SheetNames.map(name => ({
+      name,
+      data: XLSX.utils.sheet_to_json(workbook.Sheets[name], { header: 1, defval: '' })
+    }))
+    return { contentType: 'spreadsheet', content: sheets, mimeType }
+  }
+
+  return { contentType: 'text', content: buffer.toString('utf-8'), mimeType }
+}
+
+const handleUpdateFileContent = async (userId, fileId, body) => {
+  const { content } = body
+
+  if (content === undefined || content === null) {
+    throw createHttpError('Content is required', 400)
+  }
+
+  const { data: file, error: fileError } = await supabaseAdmin
+    .from('files')
+    .select('folder_id, file_path, mime_type, name')
+    .eq('id', fileId)
+    .eq('is_active', true)
+    .single()
+
+  if (fileError || !file) {
+    throw new Error('File not found')
+  }
+
+  const { data: hasAccess } = await supabaseAdmin.rpc('user_has_folder_access', {
+    folder_id: file.folder_id,
+    user_id: userId,
+    permission_type: 'write'
+  })
+
+  if (!hasAccess) {
+    throw createHttpError('Access denied: You do not have write permission for this file', 403)
+  }
+
+  const mimeType = file.mime_type
+  let fileBuffer
+
+  if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    const docxData = await HTMLtoDOCX(content, null, {
+      table: { row: { cantSplit: true } },
+      footer: false,
+      pageNumber: false,
+    })
+    fileBuffer = Buffer.from(docxData)
+  } else if (
+    mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+    mimeType === 'application/vnd.ms-excel'
+  ) {
+    const workbook = XLSX.utils.book_new()
+    for (const sheet of content) {
+      const ws = XLSX.utils.aoa_to_sheet(sheet.data)
+      XLSX.utils.book_append_sheet(workbook, ws, sheet.name)
+    }
+    fileBuffer = Buffer.from(XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }))
+  } else {
+    fileBuffer = Buffer.from(content, 'utf-8')
+  }
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from('documents')
+    .update(file.file_path, fileBuffer, { contentType: mimeType, upsert: true })
+
+  if (uploadError) {
+    throw new Error(`Failed to save file: ${uploadError.message}`)
+  }
+
+  await supabaseAdmin
+    .from('files')
+    .update({ file_size: fileBuffer.length })
+    .eq('id', fileId)
+
+  return { success: true, message: 'File saved successfully' }
+}
+
+const handleDeleteFile = async (userId, fileId) => {
+  const { data: file, error: fileError } = await supabaseAdmin
+    .from('files')
+    .select('folder_id, file_path')
+    .eq('id', fileId)
+    .eq('is_active', true)
+    .single()
+
+  if (fileError || !file) {
+    throw new Error('File not found')
+  }
+
+  const { data: hasAccess } = await supabaseAdmin.rpc('user_has_folder_access', {
+    folder_id: file.folder_id,
+    user_id: userId,
+    permission_type: 'delete'
+  })
+
+  if (!hasAccess) {
+    throw createHttpError('Access denied: You do not have delete permission for this file', 403)
+  }
+
+  const { error: storageError } = await supabaseAdmin.storage
+    .from('documents')
+    .remove([file.file_path])
+
+  if (storageError) {
+    console.warn(`[documents-api] Storage delete warning for ${file.file_path}: ${storageError.message}`)
+  }
+
+  const { error: dbError } = await supabaseAdmin
+    .from('files')
+    .update({ is_active: false })
+    .eq('id', fileId)
+
+  if (dbError) {
+    throw new Error(`Failed to delete file: ${dbError.message}`)
+  }
+
+  return { success: true, message: 'File deleted successfully' }
 }
 
 const handleCreateFolder = async (userId, body) => {
@@ -523,6 +703,12 @@ export const handler = async (event) => {
       result = await handleGetFiles(auth.userId, pathParts[1])
     } else if (method === 'GET' && pathParts[0] === 'files' && pathParts[2] === 'download') {
       result = await handleGetFileDownloadUrl(auth.userId, pathParts[1])
+    } else if (method === 'GET' && pathParts[0] === 'files' && pathParts[2] === 'content') {
+      result = await handleGetFileContent(auth.userId, pathParts[1])
+    } else if (method === 'PUT' && pathParts[0] === 'files' && pathParts.length === 2) {
+      result = await handleUpdateFileContent(auth.userId, pathParts[1], body)
+    } else if (method === 'DELETE' && pathParts[0] === 'files' && pathParts.length === 2) {
+      result = await handleDeleteFile(auth.userId, pathParts[1])
     } else if (method === 'POST' && pathParts[0] === 'folders' && pathParts.length === 1) {
       result = await handleCreateFolder(auth.userId, body)
     } else if (method === 'POST' && pathParts[0] === 'folders' && pathParts[2] === 'upload') {

@@ -132,6 +132,34 @@ export class DocumentsAPI {
     return btoa(binary)
   }
 
+  async getFileContent(fileId) {
+    const headers = await this.getAuthHeaders()
+    const response = await fetch(`${this.baseUrl}/files/${fileId}/content`, { headers })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to load file content')
+    }
+
+    return response.json()
+  }
+
+  async updateFileContent(fileId, content) {
+    const headers = await this.getAuthHeaders()
+    const response = await fetch(`${this.baseUrl}/files/${fileId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ content })
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to save file' }))
+      throw new Error(error.error || 'Failed to save file')
+    }
+
+    return response.json()
+  }
+
   async deleteFile(fileId) {
     if (!supabase) {
       throw new Error('Supabase is not configured')

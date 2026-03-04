@@ -1,6 +1,47 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../providers/AuthProvider.jsx'
 import { documentsApi } from '../lib/documentsApi.js'
+
+const OFFICE_MIME_TYPES = new Set([
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.ms-powerpoint',
+])
+
+const getOfficeUriScheme = (mimeType, url) => {
+  if (
+    mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    mimeType === 'application/msword'
+  ) {
+    return `ms-word:ofe|u|${url}`
+  }
+  if (
+    mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+    mimeType === 'application/vnd.ms-excel'
+  ) {
+    return `ms-excel:ofe|u|${url}`
+  }
+  if (
+    mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+    mimeType === 'application/vnd.ms-powerpoint'
+  ) {
+    return `ms-powerpoint:ofe|u|${url}`
+  }
+  return null
+}
+
+const EDITABLE_MIME_TYPES = new Set([
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
+  'text/plain',
+  'text/csv',
+  'text/markdown',
+  'application/json',
+])
 
 export default function DocumentsPage() {
   const { isAuthenticated, status } = useAuth()
@@ -22,6 +63,14 @@ export default function DocumentsPage() {
   const [shareEmail, setShareEmail] = useState('')
   const [sharePermissions, setSharePermissions] = useState({ can_read: true, can_write: false, can_delete: false })
   const [actionLoading, setActionLoading] = useState(false)
+  const [showEditor, setShowEditor] = useState(false)
+  const [editingFile, setEditingFile] = useState(null)
+  const [editorContent, setEditorContent] = useState(null)
+  const [editorContentType, setEditorContentType] = useState(null)
+  const [editorLoading, setEditorLoading] = useState(false)
+  const [editorSaving, setEditorSaving] = useState(false)
+  const [activeSheetIdx, setActiveSheetIdx] = useState(0)
+  const wordEditorRef = useRef(null)
 
   useEffect(() => {
     if (status === 'ready' && isAuthenticated) {
@@ -259,6 +308,76 @@ export default function DocumentsPage() {
     }
   }
 
+  const handleOpenInOffice = async (fileId, mimeType) => {
+    try {
+      setError('')
+      const { downloadUrl } = await documentsApi.getFileDownloadUrl(fileId)
+      const uri = getOfficeUriScheme(mimeType, downloadUrl)
+      if (uri) {
+        window.location.href = uri
+      }
+    } catch (err) {
+      console.error('Failed to open in Office:', err)
+      setError(err.message)
+    }
+  }
+
+  const handleViewOnline = async (fileId) => {
+    try {
+      setError('')
+      const { downloadUrl } = await documentsApi.getFileDownloadUrl(fileId)
+      const viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(downloadUrl)}`
+      window.open(viewerUrl, '_blank', 'noopener,noreferrer')
+    } catch (err) {
+      console.error('Failed to open Office Online viewer:', err)
+      setError(err.message)
+    }
+  }
+
+  const handleFileEdit = async (file) => {
+    try {
+      setEditorLoading(true)
+      setEditingFile(file)
+      setShowEditor(true)
+      setEditorContent(null)
+      setEditorContentType(null)
+      setActiveSheetIdx(0)
+      setError('')
+      const result = await documentsApi.getFileContent(file.id)
+      setEditorContent(result.content)
+      setEditorContentType(result.contentType)
+    } catch (err) {
+      console.error('Failed to load file for editing:', err)
+      setError(err.message)
+      setShowEditor(false)
+      setEditingFile(null)
+    } finally {
+      setEditorLoading(false)
+    }
+  }
+
+  const handleEditorSave = async () => {
+    if (!editingFile) return
+    let content = editorContent
+    if (editorContentType === 'html' && wordEditorRef.current) {
+      content = wordEditorRef.current.innerHTML
+    }
+    try {
+      setEditorSaving(true)
+      setError('')
+      await documentsApi.updateFileContent(editingFile.id, content)
+      setShowEditor(false)
+      setEditingFile(null)
+      setEditorContent(null)
+      setEditorContentType(null)
+    } catch (err) {
+      console.error('Failed to save file:', err)
+      setError(err.message)
+    } finally {
+      setEditorSaving(false)
+    }
+  }
+
   const handleFileOpen = async (fileId) => {
     try {
       setError('')
@@ -484,6 +603,32 @@ export default function DocumentsPage() {
                           </div>
                         </div>
                         <div className="file-actions">
+                          {OFFICE_MIME_TYPES.has(file.mime_type) && (
+                            <>
+                              <button
+                                onClick={() => handleOpenInOffice(file.id, file.mime_type)}
+                                className="action-button"
+                                title="Open in locally installed Office application"
+                              >
+                                Open in Office
+                              </button>
+                              <button
+                                onClick={() => handleViewOnline(file.id)}
+                                className="action-button"
+                                title="View in Microsoft Office Online (read-only)"
+                              >
+                                View Online
+                              </button>
+                            </>
+                          )}
+                          {EDITABLE_MIME_TYPES.has(file.mime_type) && (
+                            <button
+                              onClick={() => handleFileEdit(file)}
+                              className="action-button"
+                            >
+                              Edit
+                            </button>
+                          )}
                           <button
                             onClick={() => handleFileOpen(file.id)}
                             className="action-button"
@@ -635,6 +780,119 @@ export default function DocumentsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showEditor && (
+        <div className="modal-overlay" onClick={() => !editorSaving && setShowEditor(false)}>
+          <div
+            className="modal-content"
+            style={{ maxWidth: '95vw', width: '1100px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h2 style={{ margin: 0 }}>Edit: {editingFile?.name}</h2>
+              <button onClick={() => setShowEditor(false)} className="secondary-button" disabled={editorSaving}>✕ Close</button>
+            </div>
+
+            {editorContentType === 'html' && (
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#888' }}>
+                Note: Complex formatting (images, headers/footers) may not be preserved on save.
+              </p>
+            )}
+
+            {editorLoading ? (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                Loading file content...
+              </div>
+            ) : (
+              <>
+                {editorContentType === 'text' && (
+                  <textarea
+                    value={editorContent || ''}
+                    onChange={(e) => setEditorContent(e.target.value)}
+                    style={{ flex: 1, resize: 'none', fontFamily: 'monospace', fontSize: '13px', padding: '0.75rem', minHeight: '400px', border: '1px solid #ccc', borderRadius: '4px' }}
+                  />
+                )}
+
+                {editorContentType === 'html' && (
+                  <div
+                    ref={(el) => {
+                      wordEditorRef.current = el
+                      if (el && editorContent !== null && el.innerHTML === '') {
+                        el.innerHTML = editorContent
+                      }
+                    }}
+                    contentEditable
+                    suppressContentEditableWarning
+                    style={{ flex: 1, overflow: 'auto', padding: '1.5rem', border: '1px solid #ccc', borderRadius: '4px', minHeight: '400px', lineHeight: '1.7', outline: 'none' }}
+                  />
+                )}
+
+                {editorContentType === 'spreadsheet' && editorContent && (
+                  <div style={{ flex: 1, overflow: 'auto' }}>
+                    {editorContent.length > 1 && (
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <label style={{ marginRight: '0.5rem' }}>Sheet:</label>
+                        <select value={activeSheetIdx} onChange={(e) => setActiveSheetIdx(Number(e.target.value))}>
+                          {editorContent.map((sheet, i) => (
+                            <option key={i} value={i}>{sheet.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    <table style={{ borderCollapse: 'collapse', fontSize: '13px', width: '100%' }}>
+                      <tbody>
+                        {(editorContent[activeSheetIdx]?.data || []).map((row, rowIdx) => (
+                          <tr key={rowIdx}>
+                            {row.map((cell, colIdx) => (
+                              <td key={colIdx} style={{ border: '1px solid #ddd', padding: 0 }}>
+                                <input
+                                  type="text"
+                                  value={String(cell)}
+                                  onChange={(e) => {
+                                    const val = e.target.value
+                                    setEditorContent(prev => prev.map((sheet, si) =>
+                                      si !== activeSheetIdx ? sheet : {
+                                        ...sheet,
+                                        data: sheet.data.map((r, ri) =>
+                                          ri !== rowIdx ? r : r.map((c, ci) => ci !== colIdx ? c : val)
+                                        )
+                                      }
+                                    ))
+                                  }}
+                                  style={{ border: 'none', padding: '3px 6px', width: '100%', minWidth: '90px', outline: 'none', fontFamily: 'inherit', fontSize: 'inherit' }}
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <div className="modal-actions" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditor(false)}
+                    className="secondary-button"
+                    disabled={editorSaving}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleEditorSave}
+                    className="primary-button"
+                    disabled={editorSaving || editorLoading}
+                  >
+                    {editorSaving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
