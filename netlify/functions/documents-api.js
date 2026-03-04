@@ -27,6 +27,14 @@ const hashApiKey = (key) => {
   return crypto.createHash('sha256').update(key).digest('hex')
 }
 
+const createHttpError = (message, statusCode) => {
+  const error = new Error(message)
+  error.statusCode = statusCode
+  return error
+}
+
+const normalizeName = (value) => (value || '').trim().toLowerCase()
+
 const authenticateRequest = async (event) => {
   const authHeader = event.headers?.authorization
   const apiKeyHeader = event.headers?.['x-api-key']
@@ -229,15 +237,17 @@ const handleGetFileDownloadUrl = async (userId, fileId) => {
 }
 
 const handleCreateFolder = async (userId, body) => {
-  const { name, description, parent_id } = body
+  const name = typeof body.name === 'string' ? body.name.trim() : ''
+  const description = typeof body.description === 'string' ? body.description.trim() : ''
+  const parentId = body.parent_id || null
 
   if (!name) {
-    throw new Error('Folder name is required')
+    throw createHttpError('Folder name is required', 400)
   }
 
-  if (parent_id) {
+  if (parentId) {
     const { data: hasAccess } = await supabaseAdmin.rpc('user_has_folder_access', {
-      folder_id: parent_id,
+      folder_id: parentId,
       user_id: userId,
       permission_type: 'write'
     })
@@ -247,16 +257,29 @@ const handleCreateFolder = async (userId, body) => {
     }
   }
 
-  const { data: existingFolder } = await supabaseAdmin
+  let siblingFoldersQuery = supabaseAdmin
     .from('folders')
     .select('id, name')
-    .eq('name', name)
-    .eq('parent_id', parent_id || null)
     .eq('is_active', true)
-    .maybeSingle()
 
-  if (existingFolder) {
-    return existingFolder
+  if (parentId) {
+    siblingFoldersQuery = siblingFoldersQuery.eq('parent_id', parentId)
+  } else {
+    siblingFoldersQuery = siblingFoldersQuery.is('parent_id', null)
+  }
+
+  const { data: siblingFolders, error: siblingFoldersError } = await siblingFoldersQuery
+
+  if (siblingFoldersError) {
+    throw new Error(`Failed to validate folder name: ${siblingFoldersError.message}`)
+  }
+
+  const duplicateFolder = siblingFolders.find((folder) => {
+    return normalizeName(folder.name) === normalizeName(name)
+  })
+
+  if (duplicateFolder) {
+    throw createHttpError(`A folder named "${name}" already exists in this location. Choose a different name.`, 409)
   }
 
   const { data: folder, error } = await supabaseAdmin
@@ -264,13 +287,16 @@ const handleCreateFolder = async (userId, body) => {
     .insert({
       name,
       description,
-      parent_id: parent_id || null,
+      parent_id: parentId,
       created_by: userId
     })
     .select()
     .single()
 
   if (error) {
+    if (error.code === '23505') {
+      throw createHttpError(`A folder named "${name}" already exists in this location. Choose a different name.`, 409)
+    }
     throw new Error(`Failed to create folder: ${error.message}`)
   }
 
@@ -381,20 +407,22 @@ const handleUploadFile = async (userId, folderId, body) => {
 
   const sanitizedFileName = validateFile(file_name, file_size || 0, mime_type)
 
-  const { data: existingFile } = await supabaseAdmin
+  const { data: existingFiles, error: existingFilesError } = await supabaseAdmin
     .from('files')
     .select('id, name, file_path')
     .eq('folder_id', folderId)
-    .eq('name', sanitizedFileName)
     .eq('is_active', true)
-    .maybeSingle()
 
-  if (existingFile) {
-    return {
-      ...existingFile,
-      message: 'File with this name already exists in folder',
-      skipped: true
-    }
+  if (existingFilesError) {
+    throw new Error(`Failed to validate file name: ${existingFilesError.message}`)
+  }
+
+  const duplicateFile = existingFiles.find((file) => {
+    return normalizeName(file.name) === normalizeName(sanitizedFileName)
+  })
+
+  if (duplicateFile) {
+    throw createHttpError(`A file named "${sanitizedFileName}" already exists in this folder. Rename your file and try again.`, 409)
   }
 
   let fileBuffer
@@ -440,6 +468,11 @@ const handleUploadFile = async (userId, folderId, body) => {
 
   if (dbError) {
     await supabaseAdmin.storage.from('documents').remove([filePath])
+
+    if (dbError.code === '23505') {
+      throw createHttpError(`A file named "${sanitizedFileName}" already exists in this folder. Rename your file and try again.`, 409)
+    }
+
     throw new Error(`Failed to save file metadata: ${dbError.message}`)
   }
 
@@ -513,8 +546,8 @@ export const handler = async (event) => {
   } catch (error) {
     console.error('[documents-api] error:', error)
     
-    const statusCode = error.message.includes('Access denied') ? 403 :
-                      error.message.includes('not found') ? 404 : 500
+    const statusCode = error.statusCode || (error.message.includes('Access denied') ? 403 :
+                      error.message.includes('not found') ? 404 : 500)
 
     return {
       statusCode,
