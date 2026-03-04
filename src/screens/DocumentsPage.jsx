@@ -417,32 +417,41 @@ export default function DocumentsPage() {
                 <div className="folders-section">
                   <h3>Folders</h3>
                   <div className="folders-grid">
-                    {folders.map((folder) => (
-                      <div key={folder.id} className="folder-card">
-                        <div className="folder-icon">📁</div>
-                        <div className="folder-info">
+                    {folders.map((folder) => {
+                      const childFolderCount = folder.child_folder_count ?? 0
+                      const fileCount = folder.file_count ?? 0
+
+                      return (
+                        <div key={folder.id} className="folder-card">
+                          <div className="folder-icon">📁</div>
+                          <div className="folder-info">
+                            <button
+                              onClick={() => handleFolderClick(folder.id)}
+                              className="folder-name"
+                            >
+                              {folder.name}
+                            </button>
+                            {folder.description && (
+                              <p className="folder-description">{folder.description}</p>
+                            )}
+                            <p className="folder-meta">
+                              {childFolderCount} {childFolderCount === 1 ? 'folder' : 'folders'} • {fileCount}{' '}
+                              {fileCount === 1 ? 'file' : 'files'}
+                            </p>
+                            <p className="folder-meta">
+                              Created {formatDate(folder.created_at)}
+                            </p>
+                          </div>
                           <button
-                            onClick={() => handleFolderClick(folder.id)}
-                            className="folder-name"
+                            onClick={() => handleDeleteFolder(folder.id)}
+                            className="delete-button"
+                            title="Delete folder"
                           >
-                            {folder.name}
+                            🗑️
                           </button>
-                          {folder.description && (
-                            <p className="folder-description">{folder.description}</p>
-                          )}
-                          <p className="folder-meta">
-                            Created {formatDate(folder.created_at)}
-                          </p>
                         </div>
-                        <button
-                          onClick={() => handleDeleteFolder(folder.id)}
-                          className="delete-button"
-                          title="Delete folder"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               )}

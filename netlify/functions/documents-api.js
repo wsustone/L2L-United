@@ -107,7 +107,37 @@ const handleGetFolders = async (userId, queryParams) => {
     }
   }
 
-  return accessibleFolders
+  const foldersWithCounts = await Promise.all(
+    accessibleFolders.map(async (folder) => {
+      const [childFoldersResult, filesResult] = await Promise.all([
+        supabaseAdmin
+          .from('folders')
+          .select('id', { count: 'exact', head: true })
+          .eq('parent_id', folder.id)
+          .eq('is_active', true),
+        supabaseAdmin
+          .from('files')
+          .select('id', { count: 'exact', head: true })
+          .eq('folder_id', folder.id)
+          .eq('is_active', true),
+      ])
+
+      if (childFoldersResult.error || filesResult.error) {
+        console.warn(
+          `[documents-api] Failed to load child counts for folder ${folder.id}`,
+          childFoldersResult.error || filesResult.error
+        )
+      }
+
+      return {
+        ...folder,
+        child_folder_count: childFoldersResult.count ?? 0,
+        file_count: filesResult.count ?? 0,
+      }
+    })
+  )
+
+  return foldersWithCounts
 }
 
 const handleGetFolder = async (userId, folderId) => {
