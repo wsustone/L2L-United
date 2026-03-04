@@ -259,6 +259,17 @@ export default function DocumentsPage() {
     }
   }
 
+  const handleFileOpen = async (fileId) => {
+    try {
+      setError('')
+      const { downloadUrl } = await documentsApi.getFileDownloadUrl(fileId)
+      window.open(downloadUrl, '_blank', 'noopener,noreferrer')
+    } catch (err) {
+      console.error('Failed to open file:', err)
+      setError(err.message)
+    }
+  }
+
   const handleFileDownload = async (fileId, fileName) => {
     try {
       setError('')
@@ -473,6 +484,12 @@ export default function DocumentsPage() {
                           </div>
                         </div>
                         <div className="file-actions">
+                          <button
+                            onClick={() => handleFileOpen(file.id)}
+                            className="action-button"
+                          >
+                            Open
+                          </button>
                           <button
                             onClick={() => handleFileDownload(file.id, file.name)}
                             className="action-button"
