@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 import { supabase } from '../lib/supabaseClient.js'
 
+const ROLE_CACHE = new Map()
+
 const AuthContext = createContext(null)
 
 const initialState = {
@@ -9,11 +11,35 @@ const initialState = {
   profile: null,
   status: 'loading',
   error: null,
+  userRole: null,
 }
 
 export function AuthProvider({ children }) {
   const [state, setState] = useState(initialState)
   const isSupabaseConfigured = Boolean(supabase)
+
+  const fetchUserRole = async (userId) => {
+    if (!supabase) return null
+    if (ROLE_CACHE.has(userId)) {
+      const role = ROLE_CACHE.get(userId)
+      setState((prev) => ({ ...prev, userRole: role }))
+      return role
+    }
+    try {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single()
+      const role = data?.role ?? null
+      ROLE_CACHE.set(userId, role)
+      setState((prev) => ({ ...prev, userRole: role }))
+      return role
+    } catch {
+      setState((prev) => ({ ...prev, userRole: null }))
+      return null
+    }
+  }
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -41,6 +67,7 @@ export function AuthProvider({ children }) {
 
         if (session) {
           await hydrateProfile(session.user)
+          fetchUserRole(session.user.id)
         }
       } catch (error) {
         if (!isMounted) return
@@ -81,8 +108,10 @@ export function AuthProvider({ children }) {
 
       if (session) {
         hydrateProfile(session.user)
+        fetchUserRole(session.user.id)
       } else {
-        setState((prev) => ({ ...prev, profile: null }))
+        ROLE_CACHE.clear()
+        setState((prev) => ({ ...prev, profile: null, userRole: null }))
       }
     })
 
@@ -220,6 +249,16 @@ export function AuthProvider({ children }) {
     return data ?? null
   }
 
+  const signIn = async (email, password) => {
+    try {
+      ensureSupabase()
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      return { error: error ?? null }
+    } catch (err) {
+      return { error: err }
+    }
+  }
+
   const value = useMemo(
     () => ({
       session: state.session,
@@ -228,6 +267,11 @@ export function AuthProvider({ children }) {
       status: state.status,
       error: state.error,
       isAuthenticated: Boolean(state.session?.user),
+      isLoading: state.status === 'loading',
+      userRole: state.userRole,
+      isAdmin: state.userRole === 'admin',
+      isStaff: state.userRole === 'staff' || state.userRole === 'admin',
+      signIn,
       signInWithPassword,
       signUpWithPassword,
       sendInviteEmail,
@@ -236,7 +280,7 @@ export function AuthProvider({ children }) {
       requestEmailChange,
       refreshProfile,
     }),
-    [state.session, state.profile, state.status, state.error],
+    [state.session, state.profile, state.status, state.error, state.userRole],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

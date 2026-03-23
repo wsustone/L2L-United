@@ -1,0 +1,63 @@
+const videos = [
+  {
+    id: "video-thermasteel",
+    title: "ThermaSteel",
+    description: "See how ThermaSteel's insulated panel systems revolutionize construction with speed, strength, and energy efficiency.",
+    youtubeId: "oJSrr68MhEo",
+  },
+  {
+    id: "video-ustucco",
+    title: "UStucco",
+    description: "Discover UStucco's innovative exterior finishing solutions for durable, beautiful building facades.",
+    youtubeId: "MniL3veQAgY",
+  },
+  {
+    id: "video-biopure",
+    title: "Bio-Pure",
+    description: "Learn about Bio-Pure's advanced waste-water treatment systems for residential and commercial applications.",
+    comingSoon: true,
+  },
+];
+
+const VideoShowcase = () => {
+  return (
+    <section className="py-20 bg-background">
+      <div className="container mx-auto px-6">
+        <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-4">
+          Our <span className="text-primary">Solutions</span> in Action
+        </h2>
+        <p className="text-center text-muted-foreground mb-16 max-w-2xl mx-auto">
+          Watch how our products transform construction and infrastructure projects worldwide.
+        </p>
+
+        <div className="space-y-20">
+          {videos.map((video) => (
+            <div key={video.id} id={video.id} className="scroll-mt-24">
+              <div className="max-w-4xl mx-auto">
+                <h3 className="text-2xl font-bold text-foreground mb-2">{video.title}</h3>
+                <p className="text-muted-foreground mb-6">{video.description}</p>
+                {video.comingSoon ? (
+                  <div className="aspect-video rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center">
+                    <p className="text-2xl font-semibold text-muted-foreground">Coming Soon</p>
+                  </div>
+                ) : (
+                  <div className="aspect-video rounded-lg overflow-hidden border border-border">
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${video.youtubeId}`}
+                      title={video.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default VideoShowcase;
