@@ -166,10 +166,10 @@ const buildEmailContent = (action, { email, newEmail, link }) => {
         <p>Click the link below to confirm your email address and activate your L2L United portal account.</p>
         <p><a href="${link}">Activate your account</a></p>
         <p>The link is valid for 60 minutes and can be used once. If you didn’t request access, you can safely ignore this message.</p>
-        <p>Need assistance? Email <a href="mailto:support@l2lunited.com">support@l2lunited.com</a>.</p>
+        <p>Need assistance? Email <a href="mailto:info@l2lunited.com">info@l2lunited.com</a>.</p>
         <p>— The L2L United Team</p>
       `
-      const text = `Hi ${email},\n\nConfirm your L2L United portal account: ${link}\n\nThe link is valid for 60 minutes and can be used once. If you didn’t request access, ignore this message.\n\nNeed help? support@l2lunited.com\n\n— The L2L United Team`
+      const text = `Hi ${email},\n\nConfirm your L2L United portal account: ${link}\n\nThe link is valid for 60 minutes and can be used once. If you didn’t request access, ignore this message.\n\nNeed help? info@l2lunited.com\n\n— The L2L United Team`
       return { subject, htmlBody: html, textBody: text, toAddress: email }
     }
     case 'recovery': {
@@ -180,10 +180,10 @@ const buildEmailContent = (action, { email, newEmail, link }) => {
         <p>We received a request to reset the password for your L2L United portal account.</p>
         <p><a href="${link}">Reset your password</a></p>
         <p>The link is valid for 60 minutes and can be used once. If you didn’t make this request, you can safely ignore this message.</p>
-        <p>Questions? Email <a href="mailto:support@l2lunited.com">support@l2lunited.com</a>.</p>
+        <p>Questions? Email <a href="mailto:info@l2lunited.com">info@l2lunited.com</a>.</p>
         <p>— The L2L United Team</p>
       `
-      const text = `Hi ${email},\n\nReset your L2L United portal password: ${link}\n\nThe link is valid for 60 minutes and can be used once. If you didn’t make this request, ignore this message.\n\nNeed help? support@l2lunited.com\n\n— The L2L United Team`
+      const text = `Hi ${email},\n\nReset your L2L United portal password: ${link}\n\nThe link is valid for 60 minutes and can be used once. If you didn’t make this request, ignore this message.\n\nNeed help? info@l2lunited.com\n\n— The L2L United Team`
       return { subject, htmlBody: html, textBody: text, toAddress: email }
     }
     case 'magiclink':
@@ -195,10 +195,10 @@ const buildEmailContent = (action, { email, newEmail, link }) => {
         <p>Use the link below to continue into the L2L United portal.</p>
         <p><a href="${link}">Continue to the portal</a></p>
         <p>The link is valid for 60 minutes and can be used once. If you didn’t initiate this request, you can ignore this email.</p>
-        <p>Need assistance? Email <a href="mailto:support@l2lunited.com">support@l2lunited.com</a>.</p>
+        <p>Need assistance? Email <a href="mailto:info@l2lunited.com">info@l2lunited.com</a>.</p>
         <p>— The L2L United Team</p>
       `
-      const text = `Hi ${email},\n\nContinue to the L2L United portal: ${link}\n\nThe link is valid for 60 minutes and can be used once. If you didn’t initiate this request, ignore this email.\n\nNeed help? support@l2lunited.com\n\n— The L2L United Team`
+      const text = `Hi ${email},\n\nContinue to the L2L United portal: ${link}\n\nThe link is valid for 60 minutes and can be used once. If you didn’t initiate this request, ignore this email.\n\nNeed help? info@l2lunited.com\n\n— The L2L United Team`
       return { subject, htmlBody: html, textBody: text, toAddress: email }
     }
     case 'email_change': {
@@ -210,10 +210,10 @@ const buildEmailContent = (action, { email, newEmail, link }) => {
         <p>Current email: ${email}</p>
         <p>New email: ${target}</p>
         <p><a href="${link}">Confirm new email address</a></p>
-        <p>If you didn’t request this change, contact <a href="mailto:support@l2lunited.com">support@l2lunited.com</a>.</p>
+        <p>If you didn’t request this change, contact <a href="mailto:info@l2lunited.com">info@l2lunited.com</a>.</p>
         <p>— The L2L United Team</p>
       `
-      const text = `Confirm your new L2L United portal email:\nCurrent email: ${email}\nNew email: ${target}\nLink: ${link}\n\nIf you didn’t request this change, contact support@l2lunited.com.\n\n— The L2L United Team`
+      const text = `Confirm your new L2L United portal email:\nCurrent email: ${email}\nNew email: ${target}\nLink: ${link}\n\nIf you didn’t request this change, contact info@l2lunited.com.\n\n— The L2L United Team`
       return { subject, htmlBody: html, textBody: text, toAddress: target }
     }
     default:
@@ -312,7 +312,7 @@ export const handler = async (event) => {
       subject,
       htmlBody,
       textBody,
-      replyTo: 'support@l2lunited.com',
+      replyTo: 'info@l2lunited.com',
       toAddress,
     })
 

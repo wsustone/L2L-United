@@ -38,10 +38,10 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Email</h3>
                   <a 
-                    href="mailto:support@l2lunited.com" 
+                    href="mailto:info@l2lunited.com" 
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
-                    support@l2lunited.com
+                    info@l2lunited.com
                   </a>
                 </div>
               </div>

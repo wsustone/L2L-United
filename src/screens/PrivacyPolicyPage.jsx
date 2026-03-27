@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               <strong>Support correspondence:</strong> Messages sent to our support channels, including
-              <a href="mailto:support@l2lunited.com"> support@l2lunited.com</a>.
+              <a href="mailto:info@l2lunited.com"> info@l2lunited.com</a>.
             </li>
           </ul>
 

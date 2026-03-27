@@ -49,8 +49,8 @@ export default function RootLayout() {
                 <Link to="/support" className="help-menu-link">
                   Support page
                 </Link>
-                <a href="mailto:support@l2lunited.com" className="help-menu-link">
-                  support@l2lunited.com
+                <a href="mailto:info@l2lunited.com" className="help-menu-link">
+                  info@l2lunited.com
                 </a>
               </div>
             ) : null}

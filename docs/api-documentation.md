@@ -641,5 +641,5 @@ except requests.exceptions.HTTPError as e:
 ## Support
 
 For questions or issues with the API, please contact:
-- Email: support@l2lunited.com
+- Email: info@l2lunited.com
 - Portal: https://www.l2lunited.com/portal

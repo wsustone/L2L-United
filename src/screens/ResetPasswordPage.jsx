@@ -157,7 +157,7 @@ export default function ResetPasswordPage() {
         </form>
 
         <p className="auth-footer">
-          Need help? Email <a href="mailto:support@l2lunited.com">support@l2lunited.com</a> or return to the{' '}
+          Need help? Email <a href="mailto:info@l2lunited.com">info@l2lunited.com</a> or return to the{' '}
           <Link to="/sign-in">sign in page</Link>.
         </p>
       </div>

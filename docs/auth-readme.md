@@ -29,7 +29,7 @@ Configure these in **Netlify site settings** (production) and `.env.local` (loca
 | `GRAPH_TENANT_ID` | Azure AD tenant ID for Microsoft Graph client-credentials flow. |
 | `GRAPH_CLIENT_ID` | App registration (client) ID. |
 | `GRAPH_CLIENT_SECRET` | Client secret value created in the Azure app registration. |
-| `GRAPH_SENDER_EMAIL` | Mailbox used to send all auth emails (e.g., `support@l2lunited.com`). |
+| `GRAPH_SENDER_EMAIL` | Mailbox used to send all auth emails (e.g., `info@l2lunited.com`). |
 | `GRAPH_FROM_ALIAS` *(optional)* | Display alias if different from the sender address. |
 | `SUPABASE_URL` | Supabase project URL. (For local dev you can rely on `VITE_SUPABASE_URL` instead.) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key used only within the Netlify function to generate action links. **Keep this server-side.** |

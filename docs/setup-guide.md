@@ -163,6 +163,6 @@ Add links to the documents page in your navigation menu:
 ## Support
 
 For questions or issues:
-- Email: support@l2lunited.com
+- Email: info@l2lunited.com
 - Documentation: See `docs/api-documentation.md`
 - Database Schema: See `docs/database-schema.sql`

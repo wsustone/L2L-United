@@ -23,8 +23,8 @@ export default function PortalInfoPage() {
               Email us anytime and we’ll route you to the right partner lead.
             </p>
           </div>
-          <a className="uc-contact-link" href="mailto:support@l2lunited.com">
-            support@l2lunited.com
+          <a className="uc-contact-link" href="mailto:info@l2lunited.com">
+            info@l2lunited.com
           </a>
         </div>
 

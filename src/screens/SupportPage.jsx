@@ -12,7 +12,7 @@ export default function SupportPage() {
         <article className="info-card">
           <h2>Contact</h2>
           <p>
-            Email <a href="mailto:support@l2lunited.com">support@l2lunited.com</a> and include your organization name
+            Email <a href="mailto:info@l2lunited.com">info@l2lunited.com</a> and include your organization name
             plus a short description of what you need.
           </p>
 

@@ -36,11 +36,11 @@ You agree not to:
 
 ## 8. Compliance & Reporting
 - You agree to comply with applicable laws and regulations related to real estate, securities, and privacy.
-- Report suspected violations or security incidents to support@l2lunited.com promptly.
+- Report suspected violations or security incidents to info@l2lunited.com promptly.
 
 ## 9. Access Changes & Termination
 - L2L may modify or terminate Portal access at any time to protect program integrity or comply with legal requirements.
-- You may request account closure by contacting support@l2lunited.com. Sections concerning confidentiality, intellectual property, and liability survive termination.
+- You may request account closure by contacting info@l2lunited.com. Sections concerning confidentiality, intellectual property, and liability survive termination.
 
 ## 10. Disclaimers
 - Portal content is provided “as is” without warranties of accuracy, completeness, or fitness for a particular purpose.
@@ -63,7 +63,7 @@ These Terms are governed by the laws of the State of California, without regard 
 For questions about these Terms or the Portal, contact:
 
 **L2L United**  
-Email: support@l2lunited.com  
+Email: info@l2lunited.com  
 Address: [Insert current business address]
 
 ---
