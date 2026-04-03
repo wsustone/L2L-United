@@ -335,7 +335,7 @@ const Investment = () => {
             </h2>
             <p className="text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
               Contact our investment team to learn more about current opportunities and how 
-              you can partner with L2L United.
+              you can partner with L2L UNITED.
             </p>
             <Button asChild variant="secondary" size="lg">
               <Link to="/contact">Schedule a Consultation</Link>

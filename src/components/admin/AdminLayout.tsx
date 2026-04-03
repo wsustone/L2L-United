@@ -72,7 +72,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         >
           <div className="flex flex-col h-full">
             {/* Logo */}
-            <div className="hidden lg:flex items-center p-6 border-b border-border">
+            <div className="hidden lg:flex items-center gap-3 p-6 border-b border-border">
+              <img 
+                src="/images/L2LLogo.JPG" 
+                alt="L2L United Logo" 
+                className="h-10 w-auto object-contain"
+              />
               <Link to="/" className="text-xl font-bold text-foreground">
                 L2L <span className="text-primary">Admin</span>
               </Link>

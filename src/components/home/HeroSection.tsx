@@ -17,35 +17,34 @@ const HeroSection = () => {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full mb-8">
-            <Building2 size={16} className="text-primary" />
-            <span className="text-sm font-medium text-primary">Development Solutions Company</span>
-          </div>
+          {/* Logo */}
+          <img 
+            src="/images/L2LLogo.JPG" 
+            alt="L2L United Logo" 
+            className="h-64 w-auto mx-auto mb-2 object-contain"
+          />
 
           {/* Main Heading */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-primary mb-6 leading-tight">
-            Global{" "}
-            <span className="text-primary/70">Building</span>{" "}
-            Solutions
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#1a3a5c] mb-6 leading-tight">
+            Global Building Solutions
           </h1>
 
           {/* Subheading */}
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            L2L United delivers comprehensive development solutions for ground-up 
+            L2L UNITED delivers comprehensive development solutions for ground-up 
             construction and utilities. From concept to completion, we transform 
             visions into lasting infrastructure.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="text-base px-8">
+            <Button asChild size="lg" className="text-base px-8 bg-[#1a3a5c] hover:bg-[#152d4a] text-white">
               <Link to="/programs">
                 Explore Programs
                 <ArrowRight className="ml-2" size={18} />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="text-base px-8">
+            <Button asChild variant="outline" size="lg" className="text-base px-8 border-[#1a3a5c] text-[#1a3a5c] hover:bg-[#1a3a5c] hover:text-white">
               <Link to="/contact">Contact Us</Link>
             </Button>
           </div>

@@ -8,6 +8,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner'
 import ScrollToTop from '@/components/ScrollToTop'
 import { AuthProvider } from '@/providers/AuthProvider.jsx'
 import ProtectedRoute from '@/components/admin/ProtectedRoute'
+import { Loader2 } from 'lucide-react'
 
 // Public site pages
 import Index from '@/pages/Index'
@@ -45,7 +46,11 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+            <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          }>
               <Routes>
                 {/* ── Public site ── */}
                 <Route path="/" element={<Index />} />

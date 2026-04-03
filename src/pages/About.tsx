@@ -36,7 +36,7 @@ const About = () => {
         <div className="container mx-auto px-6">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              About L2L United
+              About L2L UNITED
             </h1>
             <p className="text-xl text-muted-foreground">
               Transforming global housing through innovative, sustainable building solutions 
@@ -56,7 +56,7 @@ const About = () => {
                 <h2 className="text-3xl font-bold text-foreground">Our Mission</h2>
               </div>
               <p className="text-muted-foreground mb-6">
-                L2L United is dedicated to revolutionizing the construction industry by providing 
+                L2L UNITED is dedicated to revolutionizing the construction industry by providing 
                 innovative, affordable, and sustainable building solutions to communities worldwide. 
                 We believe everyone deserves access to quality housing that is both durable and 
                 environmentally responsible.
