@@ -78,10 +78,10 @@ const Navbar = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsOpen(false)}
-                  className={`px-4 py-3 text-sm font-medium transition-colors hover:text-primary hover:bg-muted/50 rounded-lg mx-2 ${
+                  className={`px-4 py-3 text-sm font-medium transition-colors hover:text-[#1a3a5c] hover:bg-[#1a3a5c]/5 rounded-lg mx-2 ${
                     location.pathname === item.path ||
                     (item.path !== "/" && location.pathname.startsWith(item.path))
-                      ? "text-primary bg-primary/5"
+                      ? "text-[#1a3a5c] bg-[#1a3a5c]/5"
                       : "text-muted-foreground"
                   }`}
                 >
@@ -89,7 +89,7 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="px-2 pt-2 flex flex-col gap-2">
-                <Button asChild size="sm" className="w-full">
+                <Button asChild size="sm" className="w-full bg-[#1a3a5c] hover:bg-[#152d4a]">
                   <Link to="/contact" onClick={() => setIsOpen(false)}>
                     Contact
                   </Link>
@@ -97,7 +97,7 @@ const Navbar = () => {
                 <Link
                   to="/portal"
                   onClick={() => setIsOpen(false)}
-                  className="text-xs font-medium text-center text-muted-foreground/60 hover:text-primary transition-colors border border-border rounded-md px-3 py-2"
+                  className="text-xs font-medium text-center text-muted-foreground/60 hover:text-[#1a3a5c] transition-colors border border-border rounded-md px-3 py-2"
                 >
                   Staff Portal
                 </Link>
