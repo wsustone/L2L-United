@@ -3,13 +3,13 @@ const videos = [
     id: "video-thermasteel",
     title: "ThermaSteel",
     description: "See how ThermaSteel's insulated panel systems revolutionize construction with speed, strength, and energy efficiency.",
-    youtubeId: "oJSrr68MhEo",
+    videoSrc: "/videos/v8.mp4",
   },
   {
     id: "video-ustucco",
     title: "UStucco",
     description: "Discover UStucco's innovative exterior finishing solutions for durable, beautiful building facades.",
-    youtubeId: "MniL3veQAgY",
+    videoSrc: "/videos/stucco.mp4",
   },
   {
     id: "video-biopure",
@@ -42,13 +42,14 @@ const VideoShowcase = () => {
                   </div>
                 ) : (
                   <div className="aspect-video rounded-lg overflow-hidden border border-border">
-                    <iframe
+                    <video
                       className="w-full h-full"
-                      src={`https://www.youtube.com/embed/${video.youtubeId}`}
-                      title={video.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+                      controls
+                      preload="metadata"
+                    >
+                      <source src={video.videoSrc} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
                   </div>
                 )}
               </div>
