@@ -21,7 +21,7 @@ const AboutSection = () => {
               A Trusted Partner in Development Solutions
             </h2>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              L2L United is a premier development solutions company specializing in 
+              L2L UNITED is a premier company specializing in 
               ground-up construction and utilities infrastructure. With decades of 
               combined experience, our team brings expertise, innovation, and 
               dedication to every project we undertake.
@@ -50,7 +50,7 @@ const AboutSection = () => {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
                   <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-5xl font-bold text-primary">L2L</span>
+                    <span className="text-5xl font-bold text-primary">L2L <UNITED></UNITED></span>
                   </div>
                   <p className="text-lg font-semibold text-foreground">
                     Building Excellence

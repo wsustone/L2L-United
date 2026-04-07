@@ -55,10 +55,10 @@ const Solutions = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="pt-32 pb-16 bg-secondary/30">
+      <section className="pt-32 pb-16 ">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
               Global Building Solutions
             </h1>
             <p className="text-xl text-muted-foreground">
@@ -112,10 +112,10 @@ const Solutions = () => {
       </section>
 
       {/* Building Products */}
-      <section className="py-20 bg-secondary/30">
+      <section className="py-20 pt-32 bg-secondary/30">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Building Products</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4">  Building Products</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Innovative building materials and systems designed for performance, 
               sustainability, and ease of installation.
@@ -154,7 +154,7 @@ const Solutions = () => {
       </section>
 
       {/* Why Choose Us */}
-      <section className="py-20">
+      <section className="py-20 pt-32">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold text-foreground text-center mb-12">
             Why Choose L2L Global Building Solutions?

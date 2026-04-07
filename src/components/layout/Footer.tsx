@@ -14,7 +14,7 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-muted-foreground mb-6 max-w-md">
-              A leading development solutions company specializing in innovative 
+              A leading company specializing in innovative 
               building technologies and sustainable housing solutions worldwide.
             </p>
             <div className="flex flex-col space-y-3">

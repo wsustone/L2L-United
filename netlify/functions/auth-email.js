@@ -159,7 +159,7 @@ const buildEmailContent = (action, { email, newEmail, link }) => {
   switch (action) {
     case 'signup':
     case 'invite': {
-      const subject = 'Complete your L2L United portal registration'
+      const subject = 'Complete your L2L UNITED portal registration'
       const html = `
         <h2>Finish setting up your account</h2>
         <p>Hi ${email},</p>
