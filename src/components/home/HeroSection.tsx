@@ -1,6 +1,4 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Building2, Layers, Shield, Droplets } from "lucide-react";
+import { ArrowRight, Layers, Shield, Droplets } from "lucide-react";
 import worldMapHero from "@/assets/world-map-hero.png";
 
 const HeroSection = () => {
@@ -18,10 +16,10 @@ const HeroSection = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           {/* Logo */}
-          <img 
-            src="/images/L2LLogo.JPG" 
-            alt="L2L United Logo" 
-            className="h-64 w-auto mx-auto mb-2 object-contain"
+          <img
+            src="/images/L2LLogo.JPG"
+            alt="L2L United Logo"
+            className="h-64 w-auto mx-auto mt-8 mb-6 object-contain"
           />
 
           {/* Main Heading */}
@@ -29,28 +27,8 @@ const HeroSection = () => {
             Global Building Solutions
           </h1>
 
-          {/* Subheading */}
-          <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            L2L UNITED delivers comprehensive development solutions for ground-up 
-            construction and utilities. From concept to completion, we transform 
-            visions into lasting infrastructure.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="text-base px-8 bg-[#1a3a5c] hover:bg-[#152d4a] text-white">
-              <Link to="/programs">
-                Explore Programs
-                <ArrowRight className="ml-2" size={18} />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="text-base px-8 border-[#1a3a5c] text-[#1a3a5c] hover:bg-[#1a3a5c] hover:text-white">
-              <Link to="/contact">Contact Us</Link>
-            </Button>
-          </div>
-
           {/* Product Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-16 pt-16 border-t border-border">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-8">
             <a href="#video-thermasteel" className="group relative p-8 rounded-xl border border-border bg-card hover:border-[#1a3a5c]/50 hover:shadow-lg transition-all duration-300">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-[#1a3a5c]/10 mb-5 group-hover:bg-[#1a3a5c]/20 transition-colors">
                 <Layers size={24} className="text-[#1a3a5c]" />

@@ -9,7 +9,7 @@ const videos = [
     id: "video-ustucco",
     title: "UStucco",
     description: "Discover UStucco's innovative exterior finishing solutions for durable, beautiful building facades.",
-    videoSrc: "/videos/stucco.mp4",
+    videoSrc: "/videos/stucco.mp4#t=58",
   },
   {
     id: "video-biopure",
