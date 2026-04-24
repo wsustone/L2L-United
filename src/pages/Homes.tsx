@@ -80,7 +80,6 @@ const Homes = () => {
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src="/videos/Video_30SEG-1-transcode.mp4" type="video/mp4" />
-          <source src="/videos/Video_30SEG-1-transcode.webm" type="video/webm" />
         </video>
 
         <div className="container mx-auto px-6 relative z-10 pt-24">
