@@ -92,17 +92,6 @@ const Footer = () => {
           <p className="text-muted-foreground text-sm">
             © {new Date().getFullYear()} L2L United. All rights reserved.
           </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-              Terms of Service
-            </a>
-            <Link to="/auth" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-              Staff Login
-            </Link>
-          </div>
         </div>
       </div>
     </footer>
