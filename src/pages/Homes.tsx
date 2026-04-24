@@ -58,7 +58,7 @@ const Homes = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveSlide((c) => (c + 1) % sliderImages.length);
-    }, 4000);
+    }, 6000);
     return () => clearInterval(interval);
   }, []);
 
@@ -207,14 +207,14 @@ const Homes = () => {
 
           <div className="relative">
             {/* Slide */}
-            <div className="relative overflow-hidden rounded-xl aspect-[16/9] bg-secondary/50">
+            <div className="relative overflow-hidden rounded-xl aspect-[16/9] bg-[#0a1a2e]">
               {sliderImages.map((img, i) => (
                 <img
                   key={img.src}
                   src={img.src}
                   alt={img.alt}
                   loading="lazy"
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+                  className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-700 ${
                     i === activeSlide ? "opacity-100" : "opacity-0"
                   }`}
                 />
