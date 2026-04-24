@@ -16,6 +16,8 @@ import Contact from '@/pages/Contact'
 import Auth from '@/pages/Auth'
 import NotFound from '@/pages/NotFound'
 import UnderConstruction from '@/pages/UnderConstruction'
+import Homes from '@/pages/Homes'
+import HomeModel from '@/pages/HomeModel'
 
 // Admin pages
 import Dashboard from '@/pages/admin/Dashboard'
@@ -56,8 +58,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/about" element={<UnderConstruction />} />
                 <Route path="/investment" element={<UnderConstruction />} />
-                <Route path="/homes" element={<UnderConstruction />} />
-                <Route path="/homes/:model" element={<UnderConstruction />} />
+                <Route path="/homes" element={<Homes />} />
+                <Route path="/homes/:model" element={<HomeModel />} />
                 <Route path="/solutions" element={<UnderConstruction />} />
                 <Route path="/solutions/thermasteel" element={<UnderConstruction />} />
                 <Route path="/solutions/bio-pure" element={<UnderConstruction />} />
