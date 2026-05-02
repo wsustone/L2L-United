@@ -12,6 +12,7 @@ import { Loader2 } from 'lucide-react'
 
 // Public site pages
 import Index from '@/pages/Index'
+import About from '@/pages/About'
 import Contact from '@/pages/Contact'
 import Auth from '@/pages/Auth'
 import NotFound from '@/pages/NotFound'
@@ -56,7 +57,7 @@ const App = () => (
               <Routes>
                 {/* ── Public site ── */}
                 <Route path="/" element={<Index />} />
-                <Route path="/about" element={<UnderConstruction />} />
+                <Route path="/about" element={<About />} />
                 <Route path="/investment" element={<UnderConstruction />} />
                 <Route path="/homes" element={<Homes />} />
                 <Route path="/homes/:model" element={<HomeModel />} />

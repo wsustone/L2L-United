@@ -21,12 +21,12 @@ const videos = [
 
 const VideoShowcase = () => {
   return (
-    <section className="py-20 bg-background">
+    <section className="pt-16 pb-20 bg-background">
       <div className="container mx-auto px-6">
         <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-4">
           Our <span className="text-primary">Solutions</span> in Action
         </h2>
-        <p className="text-center text-muted-foreground mb-16 max-w-2xl mx-auto">
+        <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
           Watch how our products transform construction and infrastructure projects worldwide.
         </p>
 

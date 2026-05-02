@@ -3,7 +3,7 @@ import worldMapHero from "@/assets/world-map-hero.png";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-background">
+    <section className="relative overflow-hidden bg-background pt-28 pb-16">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
@@ -19,7 +19,7 @@ const HeroSection = () => {
           <img
             src="/images/L2LLogo.JPG"
             alt="L2L United Logo"
-            className="h-64 w-auto mx-auto mt-8 mb-6 object-contain"
+            className="h-48 w-auto mx-auto mb-6 object-contain"
           />
 
           {/* Main Heading */}

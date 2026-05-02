@@ -4,12 +4,9 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { label: "Homepage", path: "/" },
+  { label: "Home", path: "/" },
   { label: "About", path: "/about" },
-  { label: "Investment Opportunities", path: "/investment" },
   { label: "L2L Homes", path: "/homes" },
-  { label: "Global Building Solutions", path: "/solutions" },
-  { label: "News & Insights", path: "/news" },
 ];
 
 const Navbar = () => {
