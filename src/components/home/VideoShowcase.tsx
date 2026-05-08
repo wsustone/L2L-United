@@ -1,19 +1,19 @@
 const videos = [
   {
     id: "video-thermasteel",
-    title: "ThermaSteel",
+    title: "L2L Systems",
     description: "See how ThermaSteel's insulated panel systems revolutionize construction with speed, strength, and energy efficiency.",
     videoSrc: "/videos/v8.mp4",
   },
   {
     id: "video-ustucco",
-    title: "UStucco",
+    title: "L2L Supply",
     description: "Discover UStucco's innovative exterior finishing solutions for durable, beautiful building facades.",
     videoSrc: "/videos/stucco.mp4#t=58",
   },
   {
     id: "video-biopure",
-    title: "Bio-Pure",
+    title: "L2L Solutions",
     description: "Learn about Bio-Pure's advanced waste-water treatment systems for residential and commercial applications.",
     comingSoon: true,
   },

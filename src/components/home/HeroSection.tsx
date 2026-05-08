@@ -33,24 +33,24 @@ const HeroSection = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-[#1a3a5c]/10 mb-5 group-hover:bg-[#1a3a5c]/20 transition-colors">
                 <Layers size={24} className="text-[#1a3a5c]" />
               </div>
-              <div className="text-xl font-bold text-[#1a3a5c] mb-2">ThermaSteel</div>
-              <p className="text-sm text-muted-foreground leading-relaxed">Structural Insulated Panel System</p>
+              <div className="text-xl font-bold text-[#1a3a5c] mb-2">L2L Systems</div>
+              <p className="text-sm text-muted-foreground leading-relaxed">Vertical Construction Solutions powered by proven ThermaSteel building technology.</p>
               <ArrowRight size={16} className="absolute top-8 right-8 text-muted-foreground/0 group-hover:text-[#1a3a5c] transition-all duration-300 group-hover:translate-x-1" />
             </a>
             <a href="#video-ustucco" className="group relative p-8 rounded-xl border border-border bg-card hover:border-[#1a3a5c]/50 hover:shadow-lg transition-all duration-300">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-[#1a3a5c]/10 mb-5 group-hover:bg-[#1a3a5c]/20 transition-colors">
                 <Shield size={24} className="text-[#1a3a5c]" />
               </div>
-              <div className="text-xl font-bold text-[#1a3a5c] mb-2">UStucco</div>
-              <p className="text-sm text-muted-foreground leading-relaxed">Fire & Water Proof Coatings</p>
+              <div className="text-xl font-bold text-[#1a3a5c] mb-2">L2L Supply</div>
+              <p className="text-sm text-muted-foreground leading-relaxed">Material Deployment Solutions, featuring U-Stucco.</p>
               <ArrowRight size={16} className="absolute top-8 right-8 text-muted-foreground/0 group-hover:text-[#1a3a5c] transition-all duration-300 group-hover:translate-x-1" />
             </a>
             <a href="#video-biopure" className="group relative p-8 rounded-xl border border-border bg-card hover:border-[#1a3a5c]/50 hover:shadow-lg transition-all duration-300">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-[#1a3a5c]/10 mb-5 group-hover:bg-[#1a3a5c]/20 transition-colors">
                 <Droplets size={24} className="text-[#1a3a5c]" />
               </div>
-              <div className="text-xl font-bold text-[#1a3a5c] mb-2">Bio-Pure</div>
-              <p className="text-sm text-muted-foreground leading-relaxed">Waste-Water Treatment Systems</p>
+              <div className="text-xl font-bold text-[#1a3a5c] mb-2">L2L Solutions</div>
+              <p className="text-sm text-muted-foreground leading-relaxed">Horizontal Construction & Wastewater Solutions</p>
               <ArrowRight size={16} className="absolute top-8 right-8 text-muted-foreground/0 group-hover:text-[#1a3a5c] transition-all duration-300 group-hover:translate-x-1" />
             </a>
           </div>
