@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -9,9 +9,18 @@ const navItems = [
   { label: "L2L Homes", path: "/homes" },
 ];
 
+const solutionsItems = [
+  { label: "L2L Systems", path: "/solutions/l2lsystems", description: "Vertical Construction Solutions" },
+  { label: "L2L Supply", path: "/solutions/l2lsupply", description: "Material Deployment Solutions" },
+  { label: "L2L Solutions", path: "/solutions/l2lsolutions", description: "Horizontal Construction & Wastewater" },
+];
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState(false);
   const location = useLocation();
+
+  const isSolutionsActive = location.pathname.startsWith("/solutions");
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
@@ -19,9 +28,9 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <img 
-              src="/images/L2LLogo_noText.JPG" 
-              alt="L2L UNITED Logo" 
+            <img
+              src="/images/L2LLogo_noText.JPG"
+              alt="L2L UNITED Logo"
               className="h-10 w-auto object-contain"
             />
             <span className="text-xl md:text-2xl font-bold text-[#1a3a5c]">
@@ -31,7 +40,8 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6">
-            {navItems.map((item) => (
+            {/* Home & About */}
+            {navItems.slice(0, 2).map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -45,6 +55,45 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
+
+            {/* Solutions Dropdown */}
+            <div className="relative group">
+              <button
+                className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-[#1a3a5c] ${
+                  isSolutionsActive ? "text-[#1a3a5c]" : "text-muted-foreground"
+                }`}
+              >
+                Solutions
+                <ChevronDown size={14} className="transition-transform duration-200 group-hover:rotate-180" />
+              </button>
+              <div className="absolute top-full left-0 mt-2 w-64 bg-background border border-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-1 group-hover:translate-y-0">
+                {solutionsItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex flex-col px-4 py-3 first:rounded-t-xl last:rounded-b-xl hover:bg-[#1a3a5c]/5 transition-colors ${
+                      location.pathname === item.path ? "bg-[#1a3a5c]/5" : ""
+                    }`}
+                  >
+                    <span className={`text-sm font-medium ${location.pathname === item.path ? "text-[#1a3a5c]" : "text-foreground"}`}>
+                      {item.label}
+                    </span>
+                    <span className="text-xs text-muted-foreground mt-0.5">{item.description}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* L2L Homes */}
+            <Link
+              to="/homes"
+              className={`text-sm font-medium transition-colors hover:text-[#1a3a5c] ${
+                location.pathname.startsWith("/homes") ? "text-[#1a3a5c]" : "text-muted-foreground"
+              }`}
+            >
+              L2L Homes
+            </Link>
+
             <Button asChild size="sm" className="bg-[#1a3a5c] hover:bg-[#152d4a]">
               <Link to="/contact">Contact</Link>
             </Button>
@@ -70,7 +119,7 @@ const Navbar = () => {
         {isOpen && (
           <div className="lg:hidden py-3 border-t border-border max-h-[80vh] overflow-y-auto animate-in slide-in-from-top-2 duration-200">
             <div className="flex flex-col space-y-1">
-              {navItems.map((item) => (
+              {navItems.slice(0, 2).map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -85,6 +134,47 @@ const Navbar = () => {
                   {item.label}
                 </Link>
               ))}
+
+              {/* Mobile Solutions Submenu */}
+              <div className="mx-2">
+                <button
+                  onClick={() => setMobileSubmenuOpen(!mobileSubmenuOpen)}
+                  className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors hover:text-[#1a3a5c] hover:bg-[#1a3a5c]/5 ${
+                    isSolutionsActive ? "text-[#1a3a5c] bg-[#1a3a5c]/5" : "text-muted-foreground"
+                  }`}
+                >
+                  Solutions
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${mobileSubmenuOpen ? "rotate-180" : ""}`} />
+                </button>
+                {mobileSubmenuOpen && (
+                  <div className="ml-4 mt-1 flex flex-col space-y-1 border-l-2 border-[#1a3a5c]/20 pl-3">
+                    {solutionsItems.map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => { setIsOpen(false); setMobileSubmenuOpen(false); }}
+                        className={`py-2 text-sm transition-colors hover:text-[#1a3a5c] ${
+                          location.pathname === item.path ? "text-[#1a3a5c] font-medium" : "text-muted-foreground"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* L2L Homes */}
+              <Link
+                to="/homes"
+                onClick={() => setIsOpen(false)}
+                className={`px-4 py-3 text-sm font-medium transition-colors hover:text-[#1a3a5c] hover:bg-[#1a3a5c]/5 rounded-lg mx-2 ${
+                  location.pathname.startsWith("/homes") ? "text-[#1a3a5c] bg-[#1a3a5c]/5" : "text-muted-foreground"
+                }`}
+              >
+                L2L Homes
+              </Link>
+
               <div className="px-2 pt-2 flex flex-col gap-2">
                 <Button asChild size="sm" className="w-full bg-[#1a3a5c] hover:bg-[#152d4a]">
                   <Link to="/contact" onClick={() => setIsOpen(false)}>

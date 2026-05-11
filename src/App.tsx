@@ -17,6 +17,8 @@ import Contact from '@/pages/Contact'
 import Auth from '@/pages/Auth'
 import NotFound from '@/pages/NotFound'
 import UnderConstruction from '@/pages/UnderConstruction'
+import Solutions from '@/pages/Solutions'
+import SolutionsThermaSteel from '@/pages/SolutionsThermaSteel'
 import Homes from '@/pages/Homes'
 import HomeModel from '@/pages/HomeModel'
 
@@ -61,10 +63,10 @@ const App = () => (
                 <Route path="/investment" element={<UnderConstruction />} />
                 <Route path="/homes" element={<Homes />} />
                 <Route path="/homes/:model" element={<HomeModel />} />
-                <Route path="/solutions" element={<UnderConstruction />} />
-                <Route path="/solutions/thermasteel" element={<UnderConstruction />} />
-                <Route path="/solutions/bio-pure" element={<UnderConstruction />} />
-                <Route path="/solutions/exterior" element={<UnderConstruction />} />
+                <Route path="/solutions" element={<Solutions />} />
+                <Route path="/solutions/l2lsystems" element={<SolutionsThermaSteel />} />
+                <Route path="/solutions/l2lsupply" element={<UnderConstruction />} />
+                <Route path="/solutions/l2lsolutions" element={<UnderConstruction />} />
                 <Route path="/products" element={<Navigate to="/solutions" replace />} />
                 <Route path="/products/thermasteel-panels" element={<UnderConstruction />} />
                 <Route path="/products/bio-pure-models" element={<UnderConstruction />} />
