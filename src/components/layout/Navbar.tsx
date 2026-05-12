@@ -71,14 +71,11 @@ const Navbar = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex flex-col px-4 py-3 first:rounded-t-xl last:rounded-b-xl hover:bg-[#1a3a5c]/5 transition-colors ${
-                      location.pathname === item.path ? "bg-[#1a3a5c]/5" : ""
+                    className={`block px-4 py-3 first:rounded-t-xl last:rounded-b-xl hover:bg-[#1a3a5c]/5 transition-colors text-sm font-medium ${
+                      location.pathname === item.path ? "bg-[#1a3a5c]/5 text-[#1a3a5c]" : "text-foreground"
                     }`}
                   >
-                    <span className={`text-sm font-medium ${location.pathname === item.path ? "text-[#1a3a5c]" : "text-foreground"}`}>
-                      {item.label}
-                    </span>
-                    <span className="text-xs text-muted-foreground mt-0.5">{item.description}</span>
+                    {item.label}
                   </Link>
                 ))}
               </div>
