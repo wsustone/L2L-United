@@ -64,7 +64,7 @@ const ProductsBioPure = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                Bio-Pure Models
+                L2L Water Solutions
               </h1>
               <p className="text-xl text-muted-foreground mb-6">
                 Complete water treatment systems available in multiple capacities to serve 
@@ -246,7 +246,7 @@ const ProductsBioPure = () => {
               Find the Right System for Your Needs
             </h2>
             <p className="text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-              Our team can help you select and configure the perfect Bio-Pure system.
+              Our team can help you select and configure the perfect L2L Water Solution.
             </p>
             <Button asChild variant="secondary" size="lg">
               <Link to="/contact">Contact Us</Link>

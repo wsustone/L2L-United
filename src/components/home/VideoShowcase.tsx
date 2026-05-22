@@ -1,3 +1,5 @@
+import PdfSlideshow from "./PdfSlideshow";
+
 const videos = [
   {
     id: "video-thermasteel",
@@ -14,7 +16,7 @@ const videos = [
   {
     id: "video-biopure",
     title: "L2L Solutions",
-    description: "Learn about Bio-Pure's advanced waste-water treatment systems for residential and commercial applications.",
+    description: "Learn about our advanced waste-water treatment systems for residential and commercial applications.",
     comingSoon: true,
   },
 ];
@@ -37,15 +39,13 @@ const VideoShowcase = () => {
                 <h3 className="text-2xl font-bold text-foreground mb-2">{video.title}</h3>
                 <p className="text-muted-foreground mb-6">{video.description}</p>
                 {video.comingSoon ? (
-                  <div className="aspect-video rounded-lg overflow-hidden border border-border bg-muted flex items-center justify-center">
-                    <p className="text-2xl font-semibold text-muted-foreground">Coming Soon</p>
-                  </div>
+                  <PdfSlideshow src="/documents/l2l-solutions-overview.pdf" />
                 ) : (
                   <div className="aspect-video rounded-lg overflow-hidden border border-border">
                     <video
                       className="w-full h-full"
                       controls
-                      preload="metadata"
+                      preload="auto"
                     >
                       <source src={video.videoSrc} type="video/mp4" />
                       Your browser does not support the video tag.

@@ -12,7 +12,7 @@ const navItems = [
 const solutionsItems = [
   { label: "L2L Systems", path: "/solutions/l2lsystems", description: "Vertical Construction Solutions" },
   { label: "L2L Supply", path: "/solutions/l2lsupply", description: "Material Deployment Solutions" },
-  { label: "L2L Solutions", path: "/solutions/l2lsolutions", description: "Horizontal Construction & Wastewater" },
+  { label: "L2L Solutions", path: "/solutions/l2lsolutions", description: "Infrastructure & Wastewater" },
 ];
 
 const Navbar = () => {

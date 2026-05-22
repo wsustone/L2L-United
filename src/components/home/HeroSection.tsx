@@ -3,7 +3,7 @@ import worldMapHero from "@/assets/world-map-hero.png";
 
 const HeroSection = () => {
   return (
-    <section className="relative overflow-hidden bg-background pt-28 pb-16">
+    <section className="relative overflow-hidden bg-background pt-8 pb-16">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
@@ -50,7 +50,7 @@ const HeroSection = () => {
                 <Droplets size={24} className="text-[#1a3a5c]" />
               </div>
               <div className="text-xl font-bold text-[#1a3a5c] mb-2">L2L Solutions</div>
-              <p className="text-sm text-muted-foreground leading-relaxed">Horizontal Construction & Wastewater Solutions</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">Infrastructure & Wastewater Solutions</p>
               <ArrowRight size={16} className="absolute top-8 right-8 text-muted-foreground/0 group-hover:text-[#1a3a5c] transition-all duration-300 group-hover:translate-x-1" />
             </a>
           </div>

@@ -95,8 +95,35 @@ const About = () => {
         </div>
       </section>
 
-      {/* What We Do */}
+     {/* Who We Are / Divisions */}
       <section className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-3xl font-bold text-foreground mb-4 text-center">Who We Are</h2>
+            <p className="text-muted-foreground text-lg leading-relaxed mb-6">
+              L2L United is the parent organization behind a network of specialized companies
+              working together as one unified system:
+            </p>
+            <ul className="space-y-3 mb-8">
+              {divisions.map((div) => (
+                <li key={div.name} className="flex items-start gap-3">
+                  <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                  <span className="text-muted-foreground">
+                    <span className="font-semibold text-foreground">{div.name}</span> – {div.description}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-muted-foreground">
+              This structure allows us to control every stage of the building lifecycle—eliminating
+              inefficiencies, reducing risk, and delivering consistent results.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* What We Do */}
+      <section className="py-20 bg-secondary/30">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold text-foreground mb-10 text-center">What We Do</h2>
           <div className="grid md:grid-cols-2 gap-12 items-start">
@@ -212,34 +239,6 @@ const About = () => {
         </div>
       </section>
 
-     
-
- {/* Who We Are / Divisions */}
-      <section className="py-20">
-        <div className="container mx-auto px-6">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl font-bold text-foreground mb-4 text-center">Who We Are</h2>
-            <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              L2L United is the parent organization behind a network of specialized companies
-              working together as one unified system:
-            </p>
-            <ul className="space-y-3 mb-8">
-              {divisions.map((div) => (
-                <li key={div.name} className="flex items-start gap-3">
-                  <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                  <span className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">{div.name}</span> – {div.description}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="text-muted-foreground">
-              This structure allows us to control every stage of the building lifecycle—eliminating
-              inefficiencies, reducing risk, and delivering consistent results.
-            </p>
-          </div>
-        </div>
-      </section>
       {/* Where We Work */}
       <section className="py-20 bg-secondary/30">
         <div className="container mx-auto px-6">

@@ -19,7 +19,7 @@ const SolutionsBioPure = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                Bio-Pure Water Solutions
+                L2L Water Solutions
               </h1>
               <p className="text-xl text-muted-foreground mb-6">
                 Advanced water purification and treatment systems designed to provide clean, 
@@ -44,7 +44,7 @@ const SolutionsBioPure = () => {
               Complete Water Management Solutions
             </h2>
             <p className="text-muted-foreground">
-              Bio-Pure offers a comprehensive range of water treatment solutions designed to 
+              L2L Water Solutions offers a comprehensive range of water treatment solutions designed to 
               address the full spectrum of water management needs, from source to consumption.
             </p>
           </div>
@@ -117,7 +117,7 @@ const SolutionsBioPure = () => {
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-6">Our Technology</h2>
               <p className="text-muted-foreground mb-6">
-                Bio-Pure systems utilize a multi-barrier approach to water treatment, combining 
+                Systems utilize a multi-barrier approach to water treatment, combining 
                 physical, chemical, and biological processes to ensure the highest water quality.
               </p>
               <ul className="space-y-4">
