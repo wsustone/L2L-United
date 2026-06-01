@@ -5,9 +5,9 @@ const Footer = () => {
   return (
     <footer className="bg-card border-t border-border">
       <div className="container mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 gap-12">
           {/* Company Info */}
-          <div className="md:col-span-2">
+          <div>
             <Link to="/" className="inline-block mb-4">
               <span className="text-2xl font-bold text-foreground">
                 L2L <span className="text-primary">United</span>
@@ -28,63 +28,6 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
-              Company
-            </h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/about#team" className="text-muted-foreground hover:text-primary transition-colors">
-                  Leadership Team
-                </Link>
-              </li>
-              <li>
-                <Link to="/news" className="text-muted-foreground hover:text-primary transition-colors">
-                  News & Insights
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Solutions */}
-          <div>
-            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
-              Solutions
-            </h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/homes" className="text-muted-foreground hover:text-primary transition-colors">
-                  L2L Homes
-                </Link>
-              </li>
-              <li>
-                <Link to="/solutions/thermasteel" className="text-muted-foreground hover:text-primary transition-colors">
-                  ThermaSteel Systems
-                </Link>
-              </li>
-              <li>
-                <Link to="/solutions/bio-pure" className="text-muted-foreground hover:text-primary transition-colors">
-                  Bio-Pure Water
-                </Link>
-              </li>
-              <li>
-                <Link to="/products" className="text-muted-foreground hover:text-primary transition-colors">
-                  Building Products
-                </Link>
-              </li>
-            </ul>
-          </div>
         </div>
 
         {/* Bottom Bar */}

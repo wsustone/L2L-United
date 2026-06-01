@@ -79,7 +79,7 @@ const SolutionsThermaSteel = () => {
                 <Link to="/contact">Request Information</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <a href="https://thermasteelinc.com/" target="_blank" rel="noopener noreferrer">
+                <a href="https://thermasteelwest.com/" target="_blank" rel="noopener noreferrer">
                   ThermaSteel Website <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
               </Button>
@@ -156,12 +156,12 @@ const SolutionsThermaSteel = () => {
                 global markets.
               </p>
               <a
-                href="https://thermasteelinc.com/"
+                href="https://thermasteelwest.com/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-primary text-sm font-medium hover:underline"
               >
-                Learn more at thermasteelinc.com <ExternalLink size={14} />
+                Learn more at thermasteelwest.com <ExternalLink size={14} />
               </a>
             </div>
           </div>
