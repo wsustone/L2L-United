@@ -4,6 +4,7 @@ import { Target, Eye, Link, Zap, Shield, DollarSign, Layers, MapPin } from "luci
 const divisions = [
   { name: "L2L Systems by ThermaSteel West", description: "Advanced panelized building systems" },
   { name: "L2L Supply", description: "Material sourcing and procurement" },
+  { name: "L2L Solutions", description: "Water and Energy technology solutions" },
   { name: "L2L Installation", description: "Field execution and installation crews" },
   { name: "L2L Logistics", description: "Freight, coordination, and delivery optimization" },
   { name: "L2L A&E", description: "Architecture and engineering integration" },
