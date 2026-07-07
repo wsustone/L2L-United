@@ -1,5 +1,3 @@
-import PdfSlideshow from "./PdfSlideshow";
-
 const videos = [
   {
     id: "video-thermasteel",
@@ -38,9 +36,7 @@ const VideoShowcase = () => {
               <div className="max-w-4xl mx-auto">
                 <h3 className="text-2xl font-bold text-foreground mb-2">{video.title}</h3>
                 <p className="text-muted-foreground mb-6">{video.description}</p>
-                {video.comingSoon ? (
-                  <PdfSlideshow src="/documents/l2l-solutions-overview.pdf" />
-                ) : (
+                {video.comingSoon ? null : (
                   <div className="aspect-video rounded-lg overflow-hidden border border-border">
                     <video
                       className="w-full h-full"
